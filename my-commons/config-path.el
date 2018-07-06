@@ -34,10 +34,6 @@
   "Path for run-time storage" )
 
 (if (eq system-type 'windows-nt)
-    (defconst cygwin-root-path "c:/cygwin/"
-      "root dir of cygwin" ))
-
-(if (eq system-type 'windows-nt)
     (defconst orgPath (concat myDocument "99.Org/")
       "Path for all .org files under windows" ))
 
@@ -60,13 +56,29 @@
     (setq user-dropbox-directory
           (expand-file-name (concat myDocument "95.Dropbox/"))))
 
+
 (if (eq system-type 'gnu/linux)
     (setq user-dropbox-directory
           (expand-file-name (concat myDocument "95.Dropbox/"))))
 
-;; Set the default dir when using C-c C-f to open files
-(setq default-directory myDocument)
 
 
 ;; “日记”存放的位置
 (setq diary-file (concat basicPath "diary"))
+
+;; The directory that appears in the prompt for C-x C-f ('find-file') comes from
+;;   the value of default-directory, which is a buffer-local variable. When you
+;;   first start Emacs, the initial buffer displayed is the GNU Emacs buffer.
+;; That buffer's default-directory is set from the variable command-line-default-directory.
+(setq command-line-default-directory myDocument )
+;; Set the default dir when using C-c C-f to open files
+;; 2018/01/07 Seems this configuration does not work. see above comments
+;; Because the variable "default-directory" is a buffer-local variables
+(setq default-directory myDocument)
+
+;; Another way to set default start directory for C-x C-f is to start emacs with a parameter
+;; You can start Emacs in a given directory, by passing that directory on the command line.
+;; You can use a Windows shortcut to do this too. And you can have the shortcut visit that directory in Dired.
+;;    Example shortcut info:
+;;    Target: C:\Emacs\bin\runemacs.exe "C:\my\favorite\folder"
+;;    Start in: C:\my\favorite\folder

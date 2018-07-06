@@ -18,6 +18,10 @@
 (setq calendar-longitude 116.25)        ;; Longitude, positive number ==> east
 (setq calendar-location-name "Beijing") ;; City name
 
+;; Setup Coding page
+;; To solve "Some unexpected code \241\256 in Interactive-Haskell mode"
+;; https://github.com/haskell/haskell-mode/issues/400
+(setq default-process-coding-system '(cp936-dos . utf-8-unix))
 
 ;; Setup the general paths
 (load "config-path.el")

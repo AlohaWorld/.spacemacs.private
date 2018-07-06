@@ -32,8 +32,6 @@
 (defconst my-commons-packages
   '(
     (cal-china-x :location local)
-;; Since we switched auto-save-default to "on", we don't use backups
-;;    (backups :location local)
     )
   "The list of Lisp packages required by the my-commons layer.
 
@@ -60,7 +58,8 @@ Each entry is either:
         `./local/PACKAGE/PACKAGE.el'
 
       - A list beginning with the symbol `recipe' is a melpa
-        recipe.  See: https://github.com/milkypostman/melpa#recipe-format")
+        recipe.  See: https://github.com/milkypostman/melpa#recipe-format"
+)
 
 (defun my-commons/init-cal-china-x ()
   (use-package cal-china-x
@@ -78,4 +77,3 @@ Each entry is either:
   )
 
 ;;;;; packages.el ends here
-;;

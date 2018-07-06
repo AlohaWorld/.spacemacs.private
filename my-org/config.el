@@ -147,7 +147,13 @@
   ;;  A new habit (h)
 
   ;; Set the default location to store the captured ideas 
-  (setq org-default-notes-file (concat orgPath "refile.org") )
+  ;; (setq org-default-notes-file (concat orgPath "refile.org") )
+  
+  ;; To fix a bug in 0.200.10, which the org layer's default-notes-file override
+  ;;   user's,  we need to use ()with-eval-after-load 'org <code>)
+  (with-eval-after-load 'org
+                        (setq org-default-notes-file (concat orgPath "refile.org") )
+                        )
 
   (setq org-capture-templates
         (quote (("t" "todo" entry (file org-default-notes-file)
@@ -543,7 +549,6 @@ A prefix arg forces clock in of the default task."
                               ("@company" . ?c)
                               ("@office" . ?o)
                               ("@home" . ?H)
-                              ("@hongfu" . ?f)
                               (:endgroup)
                               ("PHONE" . ?p)
                               ("WAITING" . ?w)

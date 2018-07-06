@@ -10,6 +10,7 @@
 ;;; License: GPLv3
 
 ;;; Commentary:
+;; This file is loaded after layers.el
 
 ;; See the Spacemacs documentation and FAQs for instructions on how to implement
 ;; a new layer:
@@ -29,6 +30,8 @@
 
 ;;; Code:
 
+;;;  packages.el must define a variable called <layer>-packages,
+;; which should be a list of all the packages that this layer needs.
 (defconst my-org-packages
   '(
     ;; Following package are from config.el/18.4
@@ -69,6 +72,7 @@ Each entry is either:
     ;; 在org模式中自动检测table
     (add-hook 'org-mode-hook 'table-recognize)
     (add-hook 'org-mode-hook 'my-org-toc-show-hook)
+    (use-package ox-md)
 	)
   )
 
@@ -84,6 +88,18 @@ Each entry is either:
 ;;   )
 
 
+;;; Initialize each packagee
+;; For each included package, you may define one or more of the following functions,
+;;   which are called in order by Spacemacs to initialize the package.
+;;     <layer>/pre-init-<package>
+;;     <layer>/init-<package>
+;;     <layer>/post-init-<package>
+
+;; 保证第一次讲org文件转换为md格式时，export列表中有MarkDown选项
+;; (defun my-org/init-ox-md()
+;;   use-package ox-md
+;;   :defer nil
+;;   )
 
 ;; (defun my-org/init-org-habit ()
 ;;   use-package org-habit

@@ -31,7 +31,7 @@
 
 (defconst my-commons-packages
   '(
-    (cal-china-x :location local)
+    (cal-china-x :location elpa)
     )
   "The list of Lisp packages required by the my-commons layer.
 
@@ -71,8 +71,13 @@ Each entry is either:
     (progn
       (setq mark-holidays-in-calendar t)
       (setq cal-china-x-important-holidays cal-china-x-chinese-holidays)
-      (setq calendar-holidays (append cal-china-x-important-holidays calendar-holidays))
-      )
+      (setq calendar-holidays
+            (append cal-china-x-important-holidays
+                    calendar-holidays))
+;;                    other-holidays))
+      (setq cal-china-x-general-holidays
+            '((holiday-lunar 1 15 "元宵节")))
+      ) ;; end (progn
     )
   )
 

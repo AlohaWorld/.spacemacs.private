@@ -2,7 +2,7 @@
 ;; <my-commons> layer config file
 ;; path configuration: setting up the general paths
 ;; Cui Yidong <nathan.cui@gmail.com>
-;; Rev 20160521,20160730,20161218
+;; Rev 20160521,20160730,20161218,20181112
 ;;
 
 ;; -----------------------------------------------------------------------------
@@ -63,8 +63,18 @@
 
 
 
-;; “日记”存放的位置
-(setq diary-file (concat basicPath "diary"))
+;; The location for "diary" file
+;; More details: https://www.gnu.org/software/emacs/manual/html_node/emacs/Diary.html#Diary
+;; The Emacs diary keeps track of appointments or other events on a daily basis,
+;; in conjunction with the calendar. To use the diary feature, you must first
+;; create a diary file containing a list of events and their dates. Then Emacs
+;; can automatically pick out and display the events for today, for the immediate
+;; future, or for any specified date.
+;;
+;; cyd@20181112 We already have set diary-file to "org-my-diary-file" in layer my-org/config.el
+;; Please check 18.3.3 in my-org/config.el
+;;
+;; (setq diary-file (concat basicPath "diary/diary.txt"))
 
 ;; The directory that appears in the prompt for C-x C-f ('find-file') comes from
 ;;   the value of default-directory, which is a buffer-local variable. When you

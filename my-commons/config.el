@@ -13,10 +13,18 @@
 (setq user-full-name "Cui Yidong")
 (setq user-mail-address "nathan.cui@gmail.com")
 
+;; -----------------------------------------------------------------------------
+;; Calendar & Diary
 ;; Setup altitude and logitude. Then we can get sunrise/sunset time in calendar
 (setq calendar-latitude 39.55)          ;; Altitude, positive number ==> north
 (setq calendar-longitude 116.25)        ;; Longitude, positive number ==> east
 (setq calendar-location-name "Beijing") ;; City name
+;; Diary entries using non-gregorian calendars
+(add-hook 'diary-nongregorian-listing-hook 'diary-chinese-list-entries)
+(add-hook 'diary-nongregorian-marking-hook 'diary-chinese-mark-entries)
+
+
+
 
 ;; Setup Coding page
 ;; To solve "Some unexpected code \241\256 in Interactive-Haskell mode"

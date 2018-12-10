@@ -23,6 +23,8 @@
 
 
 ;; Move buffer to another window
+;; 20180515.cyd SEEMS THERE ARE NO SUCH FUNCTIONS IN SPACEMACS
+;; Need to find if these functions exist in older configs
 (global-set-key (kbd "C-x <up>")     'buf-move-up)
 (global-set-key (kbd "C-x <down>")   'buf-move-down)
 (global-set-key (kbd "C-x <left>")   'buf-move-left)

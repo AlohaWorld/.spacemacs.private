@@ -39,6 +39,8 @@
   ;; user-dropbox-directory is a predefined var by spacemacs
   (setq org-mobile-directory (concat user-dropbox-directory "MobileOrg") )
   ;; Set to my diary file (added by cuiyidong@20130714)
+  ;; This setting will replace the general diary-file settings (cyd@20181112)
+  ;; (setq diary-file (concat basicPath "diary/diary.txt")) will not working
   (setq org-my-diary-file (concat orgPath "Diary.org"))
 
 
@@ -1630,9 +1632,34 @@ so change the default 'F' binding in the agenda to allow both"
   (setq org-agenda-start-on-weekday 1)
 
   ;; Enable display of the time grid so we can see the marker for the current time
+  ;; The 3 below lines are NOT compatible with org-9.1
+  ;; (setq org-agenda-time-grid (quote ((daily today remove-match)
+  ;;                                   #("----------------" 0 16 (org-heading t))
+  ;;                                   (0900 1100 1300 1500 1700))))
+
+  ;;; "The settings for time grid for agenda display.
+  ;;; This is a list of four items.  The first item is again a list.  It contains
+  ;;; symbols specifying conditions when the grid should be displayed:
+  ;;;
+  ;;; daily         if the agenda shows a single day
+  ;;; weekly        if the agenda shows an entire week
+  ;;; today         show grid on current date, independent of daily/weekly display
+  ;;; require-timed show grid only if at least one item has a time specification
+  ;;; remove-match  skip grid times already present in an entry
+  ;;;
+  ;;; The second item is a list of integers, indicating the times that
+  ;;; should have a grid line.
+  ;;;
+  ;;; The third item is a string which will be placed right after the
+  ;;; times that have a grid line.
+  ;;;
+  ;;; The fourth item is a string placed after the grid times.  This
+  ;;; will align with agenda items"
   (setq org-agenda-time-grid (quote ((daily today remove-match)
-                                     #("----------------" 0 16 (org-heading t))
-                                     (0900 1100 1300 1500 1700))))
+                                     (0800 1000 1200 1400 1600 1800 2000)
+                                     "......"
+                                     "~~~~~~~~~~~~~~~~"
+                                     )))
 
   ;; Display tags farther right
   (setq org-agenda-tags-column -102)

@@ -32,7 +32,7 @@ values."
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
-     markdown
+     python
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
@@ -57,7 +57,7 @@ values."
      emacs-lisp
      git
 
-     ;; markdown
+     markdown
      org
      (shell :variables
              shell-default-height 30
@@ -429,50 +429,11 @@ you should place your code here."
   ;; (load "init-highline")
   ;; (highline-mode 1)
 
-  ;; Save last desktop and reload it when restarting emacs
-  ;; Use package "desktop". Cause "desktop" is distributed with emacs, we do not
-  ;; need to explicitly load it.
-  ;(setq desktop-path '("~/.emacs.d/.cache"))
-  ;(desktop-save-mode 1)
-  ;;(savehist-mode 1)
-  ;(setq history-length 250)
-  ;(add-to-list 'desktop-globals-to-save 'file-name-history)
-  ;; Specify buffers which should not be saved, by name or by mode, e.g.:
-  ;(setq desktop-buffers-not-to-save
-  ;      (concat "\\("
-  ;              "^nn\\.a[0-9]+\\|\\.log\\|(ftp)\\|^tags\\|^TAGS"
-  ;              "\\|\\.emacs.*\\|\\.diary\\|\\.newsrc-dribble\\|\\.bbdb"
-  ;              "\\)$"))
-  ;(add-to-list 'desktop-modes-not-to-save 'dired-mode)
-  ;(add-to-list 'desktop-modes-not-to-save 'Info-mode)
-  ;(add-to-list 'desktop-modes-not-to-save 'info-lookup-mode)
-  ;(add-to-list 'desktop-modes-not-to-save 'fundamental-mode)
 
-  ;; When emacs starts, load no more than 5 buffers. The rest buffers will be
-  ;; loaded when emacs idles
-  ;(setq desktop-restore-eager 3)
-
-  ;; Spacemaces had done something prevent desktop to hook in 
-  ;(desktop-read)
-
-  ;; (persp-load-state-from-file (concat persp-save-dir persp-auto-save-fname))
 
   ;; Emacs启动之后，首先显示日程列表
-  ;;  (add-hook 'after-init-hook
-  ;;          (lambda ()
-  ;;            (split-window-horizontally)
-  ;;            (next-window)
   (eyebrowse-switch-to-window-config-1)
-;;  (spacemacs/layout-double-columns)
-  ;(select-window-2)
-  ;(evil-window-split)
-  ;(select-window-3)
-  ;(switch-to-buffer "Diary.org")
-  ;(select-window-2)
-  ;(switch-to-buffer "Campus.org")
-  ;(select-window-1)
   (org-agenda-list)
-  ;;            ))
 
   ;; Display org-agenda-list will flash the frame.
   ;; After split the frame into windows, we maximize the frame

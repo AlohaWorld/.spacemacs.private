@@ -31,15 +31,15 @@ values."
    ;; List of configuration layers to load. If it is the symbol `all' instead
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
-   '(
-     python
+   '(javascript
+     html
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
      ;; <M-m f e R> (Emacs style) to install them.
      ;; ----------------------------------------------------------------
      helm
-     (auto-completion :variables
+     (auto-completion :variables ;; Or optionally just auto-completion without the variables.
       ;; auto-completion-front-end 'auto-complete
       auto-completion-return-key-behavior 'complete
       auto-completion-tab-key-behavior 'cycle
@@ -55,31 +55,65 @@ values."
      ;; Development
      java
      emacs-lisp
+
+     ;; Using HIE with Spacemacs
+     ;; lsp layer is NOT in spacemacs 0.200.13, it in a develop branch
+     ;; I cloned lsp layer from spacemacs develop branch and make it my-lsp
+     my-lsp
+     ;; lsp
+     (haskell :variables ;; Or optionally just haskell without the variables.
+              ;; haskell-completion-backend 'intero
+              haskell-completion-backend 'ghci
+              ;; haskell-completion-backend 'ghc-mod
+              haskell-process-type 'stack-ghci
+              ;; haskell-enable-hindent-style "johan-tibell" ;; for hindent
+              )
+
+     ;; version-control
      git
 
-     markdown
-     org
+     ;; markdown needs an engine to render md files
+     ;; a reasonable choice is pandoc, which is a powerful doc format converter written in haskell
+     (markdown :variables markdown-command "pandoc")
+
+     (org :variables org-enable-github-support t
+          :bind (:map spacemacs-org-mode-map-root-map ("M-RET" . nil)))
      (shell :variables
              shell-default-height 30
              shell-default-position 'bottom)
      spell-checking
      syntax-checking
-     ;; version-control
      themes-megapack
      chinese
 
+
      ;; My personal layers
      my-commons
-     my-cygwin
+     ;; Now we don't use cygwin, instead, we use msys2
+     ;;my-cygwin
      my-buffer
      my-org
-
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '()
+   dotspacemacs-additional-packages
+   '(
+     ;; any packages from melpa just put their names here
+     ; ghc-mod. configuration in dotspacemacs/user-config
+     ; ghc
+
+     ;; Haskell IDE Engine (HIE) 
+     ;; lsp-mode  ;; in my-lsp layer
+     ;; lsp-ui    ;; in my-lsp layer
+     lsp-haskell
+
+     ;; or any packages from github, we need some more configurations
+     ;;(lsp-haskell :location (recipe :fetcher github :repo "emacs-lsp/lsp-haskell"))
+     ;; ...
+     (pyim-greatdict :location (recipe :fetcher github :repo "tumashu/pyim-greatdict"))
+   )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -167,9 +201,9 @@ values."
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
    ;; size to make separators look not too crappy.
    dotspacemacs-default-font '(;;"YouYuan"
-                               "Yahei Consolas Hybrid"
-                               ;; "Lucida Bright"
-                               :size 18
+                               "YaHei Consolas Hybrid"
+                               ;; Lucida Bright"
+                               :size 22
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
@@ -282,6 +316,11 @@ values."
    dotspacemacs-show-transient-state-color-guide t
    ;; If non nil unicode symbols are displayed in the mode line. (default t)
    dotspacemacs-mode-line-unicode-symbols t
+   ;; Setup spacemacs mode line
+   ; dotspacemacs-mode-line-theme '(all-the-icons :separator 'slant)
+   dotspacemacs-mode-line-theme 'spacemacs
+
+
    ;; If non nil smooth scrolling (native-scrolling) is enabled. Smooth
    ;; scrolling overrides the default behavior of Emacs which recenters point
    ;; when it reaches the top or bottom of the screen. (default t)
@@ -309,7 +348,7 @@ values."
    ;; If non-nil pressing the closing parenthesis `)' key in insert mode passes
    ;; over any automatically added closing parenthesis, bracket, quote, etc…
    ;; This can be temporary disabled by pressing `C-q' before `)'. (default nil)
-   dotspacemacs-smart-closing-parenthesis nil
+   dotspacemacs-smart-closing-parenthesis t
    ;; Select a scope to highlight delimiters. Possible values are `any',
    ;; `current', `all' or `nil'. Default is `all' (highlight any scope and
    ;; emphasis the current one). (default 'all)
@@ -341,30 +380,28 @@ executes.
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
 
-  ;; cyd@20160730 Customize the default theme spacemacs-theme-dark
-  ;; (custom-set-variables '(spacemacs-theme-custom-colors
-  ;;                         '((bg1 . "#000000")
-  ;;                           (bg2 . "#000088")
-  ;;                           (bg3 . "#004400")
-  ;;                           (bg4 . "#444444")
-  ;;                           (base . "#bbbbbb")
-  ;;                           (comment . "#636b70")
-  ;;                           (comment-bg . "#000000")
-  ;;                           (cursor . "yellow")
-  ;;                           (keyword . "#6666ff")
-  ;;                           (highlight . "#000088"))))
-  
-  ;; Set emacs frame size when initiating
-  ;; (setq default-frame-alist
-  ;;       '((height . 21) (width , 50) (menu-bar-lines . 20) (tool-bar-lines . 0)))
+  ;; We need to change elpa server
+  ;; 作者：亓磊   来源：CSDN 
+  ;; 原文：https://blog.csdn.net/u011729865/article/details/54178388 
+  (setq-default
+   configuration-layer--elpa-archives
+   '(("melpa-cn" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
+     ("gnu-cn" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
+     ("org-cn" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/org/")))
 
   ;; Setup network proxies
-  (setq url-proxy-services
-       '(("no_proxy" . "^\\(localhost\\|10.*\\|192.168.*\\|172.16.*\\)")
-         ("http" . "127.0.0.1:1080")
-         ("https" . "127.0.0.1:1080")))
+;;   (setq url-proxy-services
+;;        '(("no_proxy" . "^\\(localhost\\|10.*\\|192.168.*\\|172.16.*\\)")
+;;          ("http" . "127.0.0.1:1080")
+;;          ("https" . "127.0.0.1:1080")))
+;;
+  ;; Disable package signature check to avoid No public key for 474F05837FBDEF9B error
+  (setq package-check-signature nil)
 
-  )
+  ;; Temporarily fix "expand-file-name: Symbol’s function definition is void: helm-current-directory" error
+  ;; (require 'helm-mode)
+
+) ;; end defun dotspacemacs/user-init ()
 
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
@@ -374,13 +411,39 @@ This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
 
-  ;; For debugging
+  ;; -----------------------------------------------------------------
   ;; Check the paths in load-path exist or not if not exists then prompt errors
   ;; (dolist (pathx load-path)
   ;;   (if (equal nil (file-directory-p pathx))
   ;;       (message (concat "MY-INFO: dir does not exist in load-path: " pathx))
   ;;     )
   ;;   )
+
+  ;; ----------------------------------------------------------------
+  ;; Haskell IDE Engine (HIE)
+  ;; Moreover, we also needs to set the logfile, the steps are:
+  ;;    M-x Customize
+  ;;    C-s lsp-haskell
+  ;;    unfold "Lsp Haskell Process Args Hie"
+  ;;    in the 3rd argument, fill: (concat spacemacs-cache-directory "hie.log")
+  (require 'lsp-haskell)
+  (custom-set-variables
+   '(lsp-haskell-process-args-hie
+     (quote
+      ("-d" "-l" "d:/home/cyd/.emacs.d/.cache/hie.log")))
+   )
+  (add-hook 'haskell-mode-hook #'lsp-haskell-enable)
+  ;; https://github.com/emacs-lsp/lsp-haskell # installation
+  (add-hook 'haskell-mode-hook 'flycheck-mode)
+
+  ;; -----------------------------------------------------------------
+  ;; repair M-RET keybindings in spacemacs
+  ;; We want M-RET to be a new list item action instead of menu leader
+  ;; key.
+  ;; Something is wrong with org-defkey cyd@20180903
+  (with-eval-after-load 'org 
+    (org-defkey org-mode-map [(meta return)] 'org-meta-return)  ;; The actual fix
+    )
 
   ;; 当处于阅读模式时，不要自动将过长的文本折叠
   ;; (hscroll-global-mode t)
@@ -392,24 +455,6 @@ you should place your code here."
   ;; Set current window size to golden ratio(0.618)
   ;; And automatically change window size when focus moves to another window
   (golden-ratio-mode t)
-
-  ;; For Java Development. Using eclim to Cooperate with java layer
-  (setq eclipse-base-dir "c:/Progra~1/eclipse")
-  (setq eclim-eclipse-dirs eclipse-base-dir
-        eclim-executable (concat eclipse-base-dir "/plugins/org.eclim_2.6.0/bin/eclim.bat"))
-  ;; Turn on eclim mode globally, so that we can manage java project anywhere
-  (global-eclim-mode)
-
-  ;; add the emacs-eclim source
-  ;; (require 'ac-emacs-eclim-source)
-  ;; (ac-emacs-eclim-config)
-  ;; Configuring company-mode
-  ;; (require 'company)
-  ;; (require 'company-emacs-eclim)
-  ;; (company-emacs-eclim-setup)
-  ;; (global-company-mode t)
-
-
 
   ;; 设置stardict查词
   ;; ***相关文件安装***请参见 basicPath/lisp/init/init-stardict.el
@@ -433,6 +478,7 @@ you should place your code here."
 
   ;; Emacs启动之后，首先显示日程列表
   (eyebrowse-switch-to-window-config-1)
+  (setq org-agenda-window-setup 'current-window) 
   (org-agenda-list)
 
   ;; Display org-agenda-list will flash the frame.
@@ -440,6 +486,11 @@ you should place your code here."
 
   (sleep-for 1)
   (toggle-frame-maximized)
+
+  ;; Fixes undefined functions at startup
+  ;; expand-file-name: Symbol’s function definition is void: helm-current-directory
+  (require 'helm)
+  (require 'tramp)
 
   ;; Display an analog clock on screen ~/lisp/mylib/analog-clock.el
   ;; (require 'analog-clock)
@@ -457,18 +508,36 @@ you should place your code here."
   ;; Document Template
   ;; (custom-set-variables '(template-use-package t nil (template)))
 
-
+  (custom-set-variables
+   ;; Here we config pyim dictionary
+   '(pyim-dicts
+     (quote (:name "pyim-greatdict"
+                   :file "d:/home/cyd/.spacemacs.private/local/pyim-greatdict.pyim"
+                   :coding utf-8-unix
+                   :dict-type pinyin-dict)))
+   '(pyim-page-tooltip t)
+   ) ;; end custom-set-variables
 
   ;; Do not write anything past this comment. This is where Emacs will
   ;; auto-generate custom variable definitions.
+)
+(defun dotspacemacs/emacs-custom-settings ()
+  "Emacs custom settings.
+This is an auto-generated function, do not modify its content directly, use
+Emacs customize menu instead.
+This function is called at the very end of Spacemacs initialization."
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(paradox-automatically-star t)
- '(pyim-dicts
+ '(package-selected-packages
    (quote
-    ((:name "pyim-greatdict" :file "d:/home/cyd/.emacs.d/elpa/chinese-pyim-greatdict-20160619.2109" :coding utf-8-unix :dict-type pinyin-dict))))
-)
+    (intero zenburn-theme zen-and-art-theme yasnippet-snippets xterm-color ws-butler winum white-sand-theme which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package unfill underwater-theme ujelly-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme toxi-theme toc-org tao-theme tangotango-theme tango-plus-theme tango-2-theme tagedit symon sunny-day-theme sublime-themes subatomic256-theme subatomic-theme string-inflection spaceline-all-the-icons spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme smeargle slim-mode shell-pop seti-theme scss-mode sass-mode reverse-theme restart-emacs rebecca-theme rainbow-delimiters railscasts-theme pyim-greatdict pyim purple-haze-theme pug-mode professional-theme prettier-js popwin planet-theme phoenix-dark-pink-theme phoenix-dark-mono-theme persp-mode pcre2el password-generator paradox pangu-spacing ox-gfm overseer orgit organic-green-theme org-projectile org-present org-pomodoro org-mime org-download org-bullets org-brain open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme noctilux-theme neotree naquadah-theme nameless mwim mvn mustang-theme multi-term move-text monokai-theme monochrome-theme molokai-theme moe-theme mmm-mode minimal-theme meghanada maven-test-mode material-theme markdown-toc majapahit-theme magit-svn magit-gitflow madhat2r-theme macrostep lush-theme lsp-ui lsp-javascript-typescript lsp-java lsp-haskell lorem-ipsum livid-mode link-hint light-soap-theme less-css-mode kaolin-themes json-navigator json-mode js2-refactor js-doc jbeans-theme jazz-theme ir-black-theme inkpot-theme indent-guide impatient-mode hungry-delete hlint-refactor hl-todo hindent highlight-parentheses highlight-numbers highlight-indentation heroku-theme hemisu-theme helm-xref helm-themes helm-swoop helm-purpose helm-projectile helm-org-rifle helm-mode-manager helm-make helm-hoogle helm-gitignore helm-git-grep helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag hc-zenburn-theme haskell-snippets gruvbox-theme gruber-darker-theme groovy-mode groovy-imports grandshell-theme gradle-mode gotham-theme google-translate golden-ratio gnuplot gitignore-templates gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md gandalf-theme fuzzy font-lock+ flyspell-correct-helm flycheck-pos-tip flycheck-haskell flx-ido flatui-theme flatland-theme find-by-pinyin-dired fill-column-indicator farmhouse-theme fancy-battery eziam-theme eyebrowse expand-region exotica-theme evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-org evil-numbers evil-nerd-commenter evil-matchit evil-magit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-cleverparens evil-args evil-anzu eval-sexp-fu espresso-theme eshell-z eshell-prompt-extras esh-help ensime emmet-mode elisp-slime-nav editorconfig dumb-jump dracula-theme dotenv-mode doom-themes doom-modeline django-theme diminish define-word darktooth-theme darkokai-theme darkmine-theme darkburn-theme dakrone-theme cyberpunk-theme counsel-projectile company-web company-tern company-statistics company-lsp company-ghci company-emacs-eclim company-cabal column-enforce-mode color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized cmm-mode clues-theme clean-aindent-mode chinese-conv cherry-blossom-theme centered-cursor-mode cal-china-x busybee-theme buffer-move bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes aggressive-indent afternoon-theme ace-window ace-pinyin ace-link ace-jump-helm-line ac-ispell))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 )

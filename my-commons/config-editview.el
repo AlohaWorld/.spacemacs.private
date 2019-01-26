@@ -97,3 +97,10 @@
 
 ;; Set default mode to text-mode ,not fundamental
 (setq default-major-mode 'text-mode)
+
+;; =========================================================
+;; 查找和替换
+;; query-replace-regexp is bound by default to C-M-%, although
+;;    some people prefer using an alias like M-x qrr. Put the
+;;    following in your InitFile to create such alias.
+(defalias 'qrr 'query-replace-regexp)

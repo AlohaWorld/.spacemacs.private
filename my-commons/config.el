@@ -23,7 +23,33 @@
 (add-hook 'diary-nongregorian-listing-hook 'diary-chinese-list-entries)
 (add-hook 'diary-nongregorian-marking-hook 'diary-chinese-mark-entries)
 
+;; cyd@20190902
+(setq calendar-week-start-day 1)        ; Make Monday the first day of a week
 
+;; GnuEmacs 23.1 introduced the variable calendar-intermonth-text that can be
+;; used for displaying ISO week numbers in the Calendar window
+(copy-face font-lock-constant-face 'calendar-iso-week-face)
+(set-face-attribute 'calendar-iso-week-face nil
+                    :height 1.0)
+(setq calendar-intermonth-text
+      '(propertize
+        (format "%2d"
+                (car
+                 (calendar-iso-from-absolute
+                  (calendar-absolute-from-gregorian (list month day year)))))
+        'font-lock-face 'calendar-iso-week-face))
+
+;; add a header for the week numbers:
+(copy-face 'default 'calendar-iso-week-header-face)
+(set-face-attribute 'calendar-iso-week-header-face nil
+                    :height 1.0)
+(setq calendar-intermonth-header
+      (propertize "Wk"                  ; or e.g. "KW" in Germany
+                  'font-lock-face 'calendar-iso-week-header-face))
+
+;; using a different color for the week number:
+(set-face-attribute 'calendar-iso-week-face nil
+                    :height 1.0 :foreground "salmon")
 
 
 ;; Setup Coding page

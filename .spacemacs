@@ -31,7 +31,8 @@ values."
    ;; List of configuration layers to load. If it is the symbol `all' instead
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
-   '(javascript
+   '(
+     better-defaults
      html
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
@@ -50,8 +51,6 @@ values."
       auto-completion-enable-sort-by-usage t
       )
 
-     better-defaults
-
      ;; Development
      java
      emacs-lisp
@@ -59,14 +58,17 @@ values."
      ;; Using HIE with Spacemacs
      ;; lsp layer is NOT in spacemacs 0.200.13, it in a develop branch
      ;; I cloned lsp layer from spacemacs develop branch and make it my-lsp
-     my-lsp
-     ;; lsp
+     ;; my-lsp
+     lsp
      (haskell :variables ;; Or optionally just haskell without the variables.
-              ;; haskell-completion-backend 'intero
-              haskell-completion-backend 'ghci
-              ;; haskell-completion-backend 'ghc-mod
+              haskell-completion-backend 'lsp
+              ;; haskell-completion-backend 'intero ;; stack install intero
+              ;; haskell-completion-backend 'dante
+              ;; haskell-completion-backend 'ghci
+              ;; haskell-completion-backend 'ghc-mod ;; need stack install ghc-mod
               haskell-process-type 'stack-ghci
-              ;; haskell-enable-hindent-style "johan-tibell" ;; for hindent
+              haskell-enable-hindent t
+              haskell-enable-hindent-style "johan-tibell" ;; for hindent
               )
 
      ;; version-control
@@ -84,7 +86,9 @@ values."
      spell-checking
      syntax-checking
      themes-megapack
-     chinese
+     (chinese :variables
+              chinese-default-input-method 'pinyin
+              chinese-enable-fcitx t)
 
 
      ;; My personal layers
@@ -105,8 +109,8 @@ values."
      ; ghc
 
      ;; Haskell IDE Engine (HIE) 
-     ;; lsp-mode  ;; in my-lsp layer
-     ;; lsp-ui    ;; in my-lsp layer
+     lsp-mode  ;; in my-lsp layer
+     lsp-ui    ;; in my-lsp layer
      lsp-haskell
 
      ;; or any packages from github, we need some more configurations
@@ -390,11 +394,11 @@ before packages are loaded. If you are unsure, you should try in setting them in
      ("org-cn" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/org/")))
 
   ;; Setup network proxies
-;;   (setq url-proxy-services
-;;        '(("no_proxy" . "^\\(localhost\\|10.*\\|192.168.*\\|172.16.*\\)")
-;;          ("http" . "127.0.0.1:1080")
-;;          ("https" . "127.0.0.1:1080")))
-;;
+  (setq url-proxy-services
+        '(("no_proxy" . "^\\(localhost\\|10.*\\|192.168.*\\|172.16.*\\|101.*\\)")
+          ("http" . "127.0.0.1:1080")
+          ("https" . "127.0.0.1:1080")))
+
   ;; Disable package signature check to avoid No public key for 474F05837FBDEF9B error
   (setq package-check-signature nil)
 
@@ -432,7 +436,7 @@ you should place your code here."
      (quote
       ("-d" "-l" "d:/home/cyd/.emacs.d/.cache/hie.log")))
    )
-  (add-hook 'haskell-mode-hook #'lsp-haskell-enable)
+  (add-hook 'haskell-mode-hook #'lsp)
   ;; https://github.com/emacs-lsp/lsp-haskell # installation
   (add-hook 'haskell-mode-hook 'flycheck-mode)
 
@@ -466,14 +470,8 @@ you should place your code here."
   ;; (load "init-yasnippet")
   ;; (load "init-programming")
   ;; (load "init-helm")
-  ;; (load "init-edit")
   ;; 设置拷贝 | 粘贴 | 搜索 | 替换；参见 basePath/lisp/init/init-cps.el
   ;; (load "init-cps")
-  ;; (load "init-org")
-  ;; highline 模式设置：将当前行加亮；应放到最后
-  ;; (load "init-highline")
-  ;; (highline-mode 1)
-
 
 
   ;; Emacs启动之后，首先显示日程列表
@@ -508,16 +506,21 @@ you should place your code here."
   ;; Document Template
   ;; (custom-set-variables '(template-use-package t nil (template)))
 
-  (custom-set-variables
-   ;; Here we config pyim dictionary
-   '(pyim-dicts
-     (quote (:name "pyim-greatdict"
-                   :file "d:/home/cyd/.spacemacs.private/local/pyim-greatdict.pyim"
-                   :coding utf-8-unix
-                   :dict-type pinyin-dict)))
-   '(pyim-page-tooltip t)
-   ) ;; end custom-set-variables
+  ;; Input Method
+  (setq default-input-method "pyim")
+  (global-set-key (kbd "C-\\") 'toggle-input-method)
 
+
+;;     (custom-set-variables
+;;      ;; Here we config pyim dictionary
+;;      '(pyim-dicts
+;;        (quote (:name "pyim-greatdict"
+;;                      :file "d:/home/cyd/.spacemacs.private/local/pyim-greatdict.pyim"
+;;                      :coding utf-8-unix
+;;                      :dict-type pinyin-dict)))
+;;      '(pyim-page-tooltip t)
+;;      ) ;; end custom-set-variables
+;;   
   ;; Do not write anything past this comment. This is where Emacs will
   ;; auto-generate custom variable definitions.
 )
@@ -531,13 +534,15 @@ This function is called at the very end of Spacemacs initialization."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages
+ '(custom-safe-themes
    (quote
-    (intero zenburn-theme zen-and-art-theme yasnippet-snippets xterm-color ws-butler winum white-sand-theme which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package unfill underwater-theme ujelly-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme toxi-theme toc-org tao-theme tangotango-theme tango-plus-theme tango-2-theme tagedit symon sunny-day-theme sublime-themes subatomic256-theme subatomic-theme string-inflection spaceline-all-the-icons spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme smeargle slim-mode shell-pop seti-theme scss-mode sass-mode reverse-theme restart-emacs rebecca-theme rainbow-delimiters railscasts-theme pyim-greatdict pyim purple-haze-theme pug-mode professional-theme prettier-js popwin planet-theme phoenix-dark-pink-theme phoenix-dark-mono-theme persp-mode pcre2el password-generator paradox pangu-spacing ox-gfm overseer orgit organic-green-theme org-projectile org-present org-pomodoro org-mime org-download org-bullets org-brain open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme noctilux-theme neotree naquadah-theme nameless mwim mvn mustang-theme multi-term move-text monokai-theme monochrome-theme molokai-theme moe-theme mmm-mode minimal-theme meghanada maven-test-mode material-theme markdown-toc majapahit-theme magit-svn magit-gitflow madhat2r-theme macrostep lush-theme lsp-ui lsp-javascript-typescript lsp-java lsp-haskell lorem-ipsum livid-mode link-hint light-soap-theme less-css-mode kaolin-themes json-navigator json-mode js2-refactor js-doc jbeans-theme jazz-theme ir-black-theme inkpot-theme indent-guide impatient-mode hungry-delete hlint-refactor hl-todo hindent highlight-parentheses highlight-numbers highlight-indentation heroku-theme hemisu-theme helm-xref helm-themes helm-swoop helm-purpose helm-projectile helm-org-rifle helm-mode-manager helm-make helm-hoogle helm-gitignore helm-git-grep helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag hc-zenburn-theme haskell-snippets gruvbox-theme gruber-darker-theme groovy-mode groovy-imports grandshell-theme gradle-mode gotham-theme google-translate golden-ratio gnuplot gitignore-templates gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md gandalf-theme fuzzy font-lock+ flyspell-correct-helm flycheck-pos-tip flycheck-haskell flx-ido flatui-theme flatland-theme find-by-pinyin-dired fill-column-indicator farmhouse-theme fancy-battery eziam-theme eyebrowse expand-region exotica-theme evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-org evil-numbers evil-nerd-commenter evil-matchit evil-magit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-cleverparens evil-args evil-anzu eval-sexp-fu espresso-theme eshell-z eshell-prompt-extras esh-help ensime emmet-mode elisp-slime-nav editorconfig dumb-jump dracula-theme dotenv-mode doom-themes doom-modeline django-theme diminish define-word darktooth-theme darkokai-theme darkmine-theme darkburn-theme dakrone-theme cyberpunk-theme counsel-projectile company-web company-tern company-statistics company-lsp company-ghci company-emacs-eclim company-cabal column-enforce-mode color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized cmm-mode clues-theme clean-aindent-mode chinese-conv cherry-blossom-theme centered-cursor-mode cal-china-x busybee-theme buffer-move bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes aggressive-indent afternoon-theme ace-window ace-pinyin ace-link ace-jump-helm-line ac-ispell))))
+    ("cd7ffd461946d2a644af8013d529870ea0761dccec33ac5c51a7aaeadec861c2" default)))
+ '(evil-want-Y-yank-to-eol nil)
+)
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(org-mode-line-clock ((t (:background "grey75" :foreground "red" :box (:line-width -1 :style released-button))))))
 )

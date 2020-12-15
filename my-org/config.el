@@ -17,24 +17,25 @@
 (with-eval-after-load 'org
 
   ;; Tweak the bullets displayed in the org buffer
-  (setq org-bullets-bullet-list '("*" "*" "■" "◆" "▲" "▶"))
+  ;;(setq org-bullets-bullet-list '("*" "*" "■" "◆" "▲" "▶"))
 
 
   ;; 4.4 Agenda Setup
   ;; 设置变量org-agenda-files，以便让Org-Mode知道在哪些文件里搜寻TODO和计划项目
-  (setq org-agenda-files (list (concat orgPath "Campus.org")
-                               (concat orgPath "Diary.org")
-                               (concat orgPath "Meeting.org")
-                               (concat orgPath "Personal.org")
-  							 ))
+  ;;   (setq org-agenda-files (list (concat orgPath "Campus.org")
+  ;;                                (concat orgPath "Diary.org")
+  ;;                                (concat orgPath "Meeting.org")
+  ;;                                (concat orgPath "Personal.org")
+  ;;                                (concat orgPath "Note.org")
+  ;;   							 ))
   ;;我们不再指定具体的org文件，而是使用目录形式，所有目录下的org文件都在搜索范围内
   ;; cuiyidong@20140502
-  ;; (setq org-agenda-files (list orgPath))  ; orgPath is defined in my-commons/config.el
+  (setq org-agenda-files (list orgPath))  ; orgPath is defined in my-commons/config.el
 
   ;; Set to the location of your Org files on your local system
   (setq org-directory orgPath )
   ;; Set to the name of the file where new notes will be stored
-  (setq org-mobile-inbox-for-pull (concat orgPath "Note.org") )
+  (setq org-mobile-inbox-for-pull (concat orgPath "Notes.org") )
   ;; Set to <your Dropbox root directory>/MobileOrg.
   ;; user-dropbox-directory is a predefined var by spacemacs
   (setq org-mobile-directory (concat user-dropbox-directory "MobileOrg") )
@@ -192,21 +193,21 @@
   ;; 合适的org文件的合适的位置，这叫做 refile。以下是refile
   ;; 的配置
 
-                                        ; Targets include this file and any file contributing to the agenda - up to 9 levels deep
+  ; Targets include this file and any file contributing to the agenda - up to 9 levels deep
   (setq org-refile-targets (quote ((nil :maxlevel . 9)
                                    (org-agenda-files :maxlevel . 9))))
 
-                                        ; Use full outline paths for refile targets - we file directly with IDO
+  ; Use full outline paths for refile targets - we file directly with IDO
   (setq org-refile-use-outline-path t)
 
-                                        ; Targets complete directly with IDO
+  ; Targets complete directly with IDO
   (setq org-outline-path-complete-in-steps nil)
 
-                                        ; Allow refile to create parent tasks with confirmation
+  ; refile to create parent tasks with confirmation
   (setq org-refile-allow-creating-parent-nodes (quote confirm))
 
-                                        ; Use IDO for both buffer and file completion and ido-everywhere to t
-                                        ; (setq org-completion-use-ido t)
+  ; IDO for both buffer and file completion and ido-everywhere to t
+  ; (setq org-completion-use-ido t)
 
 ;;;; Below added on 2013/07/13
                                         ;(setq ido-everywhere t)
@@ -218,7 +219,7 @@
 ;;;; 2013/07/13 over
 
 ;;;; Refile settings
-                                        ; Exclude DONE state tasks from refile targets
+  ; Exclude DONE state tasks from refile targets
   (defun bh/verify-refile-target ()
     "Exclude todo keywords with a done state from refile targets"
     (not (member (nth 2 (org-heading-components)) org-done-keywords)))
@@ -1182,7 +1183,8 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
     (interactive)
     (setq appt-time-msg-list nil)
     (setq appt-display-mode-line t)
-    (setq appt-msg-countdown-list '(5 1))
+;;    (setq appt-msg-countdown-list '(5 1))
+    (setq appt-msg-countdown-list '(10))
     (setq appt-msg-window nil)
     (org-agenda-to-appt)
     )
@@ -1199,6 +1201,26 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
   ;; If we leave Emacs running overnight - reset the appointments one minute after midnight
   (run-at-time "24:01" nil 'bh/org-agenda-to-appt)
 
+;;    ;; Customize the notification Window
+;;    (setq appt-disp-window-function (function my-appt-display))
+;;  
+;;    (defun my-appt-display (min-to-app new-time msg)
+;;      (notify-win10
+;;       (format "Emacs appointment in %s minutes" min-to-app)    ;; passed to -title
+;;       (format "%s" msg)))  ;; passed to -message in win10 powershell script call
+;;    (defun notify-win10 (title message)
+;;      (call-process "powershell -File notify.ps1"
+;;                    nil 0 nil
+;;                    "-group" "Emacs"
+;;                    "-title" title
+;;                    "-sender" "org.gnu.Emacs"
+;;                    "-message" message
+;;                    "-activate" "oeg.gnu.Emacs"))
+;;    (defun my-appt-disp-window (min-to-app new-time msg)
+;;      (save-window-excursion
+;;        (shell-command
+;;         (concat
+;;          "c:/Windows/System32/cscript.exe //nologo c:/Dropbox/ToDo/PopUp.vbs \"" msg "\"")nil nil)))
 
   ;;===================================================
   ;; 18 Productivity Tools

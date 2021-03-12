@@ -36,5 +36,5 @@
     (message "Can not find C:/msys64/usr/bin/zsh.exe. Keep the shell as-is(cmd.exe)")
   )
 )
-(autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t) 
+(autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on t)

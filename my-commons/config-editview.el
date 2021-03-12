@@ -29,7 +29,6 @@
 ;; (setq case-fold-search nil) ; make searches case sensitive
 (setq case-fold-search t)   ; make searches case insensitive
 
-
 ;; 输入左括号时，自动输入右括号
 ;; python 存在'''模式，做特殊处理
 (add-hook 'python-mode-hook

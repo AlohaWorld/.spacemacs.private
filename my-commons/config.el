@@ -11,7 +11,7 @@
 
 ;; Setup personal information
 (setq user-full-name "Cui Yidong")
-(setq user-mail-address "nathan.cui@gmail.com")
+(setq user-mail-address "cyd@bupt.edu.cn")
 
 ;; -----------------------------------------------------------------------------
 ;; Calendar & Diary
@@ -69,7 +69,3 @@
 ;; Configuration about editing/viewing environment
 ;; cyd@20160739
 (load "config-editview.el")
-
-
-;; github integration
-(setq paradox-github-token "3b94e043f45d61a8f2590bb63bda99e2a0dcb601")

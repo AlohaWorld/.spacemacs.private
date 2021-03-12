@@ -25,9 +25,6 @@
 ;; 2. Rebind to Alt+Space to avoid conflict with Sogou (Win8/Win10)
 (global-set-key (kbd "M-SPC") 'set-mark-command)
 
-;; Rebind CapsLock key to Ctrl key
-(define-key function-key-map [(capslock)] 'event-apply-control-modifier)
-
 ;; Rebind line-number key. Show line number with \C-cn
 (global-set-key "\C-cn" 'spacemacs/toggle-line-numbers)
 

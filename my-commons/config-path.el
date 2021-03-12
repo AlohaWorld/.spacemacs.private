@@ -41,27 +41,6 @@
     (defconst orgPath (concat myDocument "99.org/")
       "Path for all .org files under linux" ))
 
-;; dropbox 是用来做pc与手机端的 mobile org mode 内容同步的
-;;
-;; !!!NOTE!!!
-;;
-;; There is already a dropbox path defined in ~/.emacs.d/core/core-load-paths.el
-;; (defconst user-dropbox-directory
-;;   (expand-file-name (concat user-home-directory "Dropbox/"))
-;;   "Dropbox directory.")
-;;
-;; Although "user-dropbox-directory" is defined as a "const", we acturally can
-;; change its value by setq. ==> https://www.gnu.org/software/emacs/manual/html_node/elisp/Defining-Variables.html
-(if (eq system-type 'windows-nt)
-    (setq user-dropbox-directory
-          (expand-file-name (concat myDocument "95.Dropbox/"))))
-
-
-(if (eq system-type 'gnu/linux)
-    (setq user-dropbox-directory
-          (expand-file-name (concat myDocument "95.Dropbox/"))))
-
-
 
 ;; The location for "diary" file
 ;; More details: https://www.gnu.org/software/emacs/manual/html_node/emacs/Diary.html#Diary
@@ -81,7 +60,7 @@
 ;;   first start Emacs, the initial buffer displayed is the GNU Emacs buffer.
 ;; That buffer's default-directory is set from the variable command-line-default-directory.
 (setq command-line-default-directory myDocument )
-;; Set the default dir when using C-c C-f to open files
+;; Set the default dir when using C-x C-f to open files
 ;; 2018/01/07 Seems this configuration does not work. see above comments
 ;; Because the variable "default-directory" is a buffer-local variables
 (setq default-directory myDocument)
@@ -92,3 +71,6 @@
 ;;    Example shortcut info:
 ;;    Target: C:\Emacs\bin\runemacs.exe "C:\my\favorite\folder"
 ;;    Start in: C:\my\favorite\folder
+
+;; dropbox directory
+(setq user-dropbox-directory (concat orgPath "dropbox/"))

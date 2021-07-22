@@ -11,12 +11,13 @@
 
 
 ;; Because of autoloading, calling to =org= functions will trigger the loading up
-;; of the =org= shipped with emacs wich will induce conflicts.
+;; of the =org= shipped with emacs which will induce conflicts.
 ;; One way to avoid conflict is to wrap your =org= config code in a
 ;; =with-eval-after-load= block like this:
 (with-eval-after-load 'org
 
   ;; Tweak the bullets displayed in the org buffer
+  ;; If this is commented out, bullets in themes will be used.
   ;;(setq org-bullets-bullet-list '("*" "*" "■" "◆" "▲" "▶"))
 
 

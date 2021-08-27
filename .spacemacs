@@ -33,13 +33,14 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(html
+   '(
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
      ;; `M-m f e R' (Emacs style) to install them.
      ;; ----------------------------------------------------------------
      better-defaults
+     chinese
      helm
      (auto-completion :variables ;; Or optionally just auto-completion without the variables.
                       ;; auto-completion-front-end 'auto-complete
@@ -51,24 +52,13 @@ This function should only modify configuration layer settings."
                       auto-completion-private-snippets-directory  (concat (car dotspacemacs-configuration-layer-path) "snippets/")
                       auto-completion-enable-sort-by-usage t
       )
+     html
      multiple-cursors
      treemacs
      ;; Development
      ;java
      emacs-lisp
      autohotkey
-
-     ;lsp
-     ;(haskell :variables ;; Or optionally just haskell without the variables.
-     ;         haskell-completion-backend 'lsp
-     ;         ;; haskell-completion-backend 'intero ;; stack install intero
-     ;         ;; haskell-completion-backend 'dante
-     ;         ;; haskell-completion-backend 'ghci
-     ;         ;; haskell-completion-backend 'ghc-mod ;; need stack install ghc-mod
-     ;         haskell-process-type 'stack-ghci
-     ;         haskell-enable-hindent t
-     ;         haskell-enable-hindent-style "johan-tibell" ;; for hindent
-     ;         )
 
      ;git
 
@@ -254,7 +244,7 @@ It should only modify the values of Spacemacs settings."
    ;; directory. A string value must be a path to an image format supported
    ;; by your Emacs build.
    ;; If the value is nil then no banner is displayed. (default 'official)
-   dotspacemacs-startup-banner 'official
+   dotspacemacs-startup-banner nil
 
    ;; List of items to show in startup buffer or an association list of
    ;; the form `(list-type . list-size)`. If nil then it is disabled.
@@ -323,16 +313,21 @@ It should only modify the values of Spacemacs settings."
    ;; Default font or prioritized list of fonts. The `:size' can be specified as
    ;; a non-negative integer (pixel size), or a floating-point (point size).
    ;; Point size is recommended, because it's device independent. (default 10.0)
-   dotspacemacs-default-font '(("Fira Code Light"   ; "Fira Code Retina"
-                               :size 15.0
-                               :weight light
-                               :width normal
-                               :powerline-scale 1.1)
-                               ("Source Code Pro"
+   dotspacemacs-default-font '(("Microsoft YaHei Mono"
                                 :size 15.0
                                 :weight normal
                                 :width normal
-                                :powerline-scale 1.5)
+                                :powerline-scale 1.1)
+;;                               ("Fira Code Light"  ; "Fira Code Retina"
+;;                               :size 15.0
+;;                               :weight light
+;;                               :width normal
+;;                               :powerline-scale 1.1)
+;;                               ("Source Code Pro"
+;;                                :size 15.0
+;;                                :weight normal
+;;                                :width normal
+;;                                :powerline-scale 1.5)
                                )
    ;; The leader key
    dotspacemacs-leader-key "SPC"
@@ -633,8 +628,13 @@ It should only modify the values of Spacemacs settings."
   (setq configuration-layer-elpa-archives
         '(("melpa-cn" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
           ("org-cn"   . "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/")
-          ("gnu-cn"   . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")))
+          ("gnu-cn"   . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
+          ("nongnu"   . "https://elpa.nongnu.org/nongnu/")
+          ))
   (setq-default package-archives configuration-layer-elpa-archives)
+
+  ;; We do NOT check package signature for key errors
+  (setq package-check-signature nil)
 
   ) ;; end defun dotspacemacs/init ()
 
@@ -652,6 +652,15 @@ This function is called immediately after `dotspacemacs/init', before layer
 configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
+  ;; Put the custom settings in a file other than current dot-spacemacs file
+  (setq custom-file "~/.emacs.d/.cache/.custom-settings")
+  (load custom-file)
+  ;; Setup modifications for themes
+  (setq theming-modifications
+       '((solarized-dark-high-contrast
+          (default :background "black")
+          )))
+
   )
 
 (defun dotspacemacs/user-load ()
@@ -699,7 +708,7 @@ before packages are loaded."
   ;; setup chinese fonts
   (dolist (charset '(kana han symbol cjk-misc bopomofo))
     (set-fontset-font (frame-parameter nil 'font)
-                      charset (font-spec :family "Microsoft Yahei UI" :size 15.0)
+                      charset (font-spec :family "Microsoft YaHei Mono" :size 15.0)
                      ; charset (font-spec :family "Noto Sans Mono CJK SC Regular" :size 15.0)
                       ))
 
@@ -725,10 +734,10 @@ before packages are loaded."
   (toggle-frame-maximized)
 
   ;; Setup modifications for themes
-  (setq theming-modifications
-        '((solarized-dark-high-contrast
-           (default :background "black")
-           )))
+  ;;  (setq theming-modifications
+  ;;        '((solarized-dark-high-contrast
+  ;;           (default :background "black")
+  ;;           )))
 
   ;; Fixes undefined functions at startup
   ;; expand-file-name: Symbol’s function definition is void: helm-current-directory ;(require 'helm)
@@ -766,10 +775,9 @@ This function is called at the very end of Spacemacs initialization."
  '(evil-want-Y-yank-to-eol nil)
  '(highlight-parentheses-colors '("#3cafa5" "#c49619" "#3c98e0" "#7a7ed2" "#93a61a"))
  '(org-modules
-   '(org-bbdb org-bibtex org-crypt org-gnus org-id org-info org-jsinfo org-habit org-inlinetask org-irc org-mew org-mhe org-protocol org-rmail org-vm org-wl org-w3m org-drill))
+   '(ol-bbdb ol-bibtex org-crypt ol-gnus org-id ol-info ol-jsinfo org-habit org-inlinetask ol-irc ol-mew ol-mhe org-protocol ol-rmail ol-vm ol-wl ol-w3m))
  '(package-selected-packages
-   '(org-re-reveal ahk-mode web-mode web-beautify tagedit slim-mode scss-mode sass-mode pug-mode prettier-js impatient-mode simple-httpd helm-css-scss haml-mode emmet-mode counsel-css counsel swiper ivy company-web web-completion-data add-node-modules-path zenburn-theme zen-and-art-theme yasnippet-snippets xterm-color ws-butler writeroom-mode winum white-sand-theme which-key volatile-highlights vi-tilde-fringe uuidgen use-package unicode-fonts unfill undo-tree underwater-theme ujelly-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme treemacs-projectile treemacs-persp treemacs-icons-dired toxi-theme toc-org terminal-here tao-theme tangotango-theme tango-plus-theme tango-2-theme symon symbol-overlay sunny-day-theme sublime-themes subatomic256-theme subatomic-theme string-inflection spaceline-all-the-icons spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme shell-pop seti-theme reverse-theme restart-emacs request rebecca-theme rainbow-delimiters railscasts-theme purple-haze-theme professional-theme popwin planet-theme phoenix-dark-pink-theme phoenix-dark-mono-theme pcre2el password-generator paradox ox-gfm overseer organic-green-theme org-superstar org-rich-yank org-projectile org-present org-pomodoro org-mime org-download org-cliplink org-brain open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme noctilux-theme naquadah-theme nameless mwim mustang-theme multi-term move-text monokai-theme monochrome-theme molokai-theme moe-theme modus-vivendi-theme modus-operandi-theme mmm-mode minimal-theme material-theme markdown-toc majapahit-theme madhat2r-theme macrostep lush-theme lorem-ipsum link-hint light-soap-theme ligature kaolin-themes jbeans-theme jazz-theme ir-black-theme inkpot-theme indent-guide hybrid-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation heroku-theme hemisu-theme helm-xref helm-themes helm-swoop helm-purpose helm-projectile helm-org-rifle helm-org helm-notmuch helm-mode-manager helm-make helm-ls-git helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag hc-zenburn-theme gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate golden-ratio gnuplot gh-md gandalf-theme fuzzy font-lock+ flyspell-correct-helm flycheck-pos-tip flycheck-package flycheck-elsa flx-ido flatui-theme flatland-theme farmhouse-theme fancy-battery eziam-theme eyebrowse expand-region exotica-theme evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-collection evil-cleverparens evil-args evil-anzu eval-sexp-fu espresso-theme eshell-z eshell-prompt-extras esh-help emr elisp-slime-nav editorconfig dumb-jump dracula-theme dotenv-mode doom-themes django-theme dired-quick-sort diminish devdocs define-word darktooth-theme darkokai-theme darkmine-theme darkburn-theme dakrone-theme cyberpunk-theme company-statistics column-enforce-mode color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized clues-theme clean-aindent-mode chocolate-theme cherry-blossom-theme centered-cursor-mode cal-china-x busybee-theme buffer-move bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes aggressive-indent afternoon-theme ace-link ace-jump-helm-line ac-ispell)))
-
+   '(pyim xr pangu-spacing find-by-pinyin-dired chinese-conv ace-pinyin pinyinlib gnu-elpa-keyring-update cfrs posframe markdown-mode flyspell-correct package-lint flycheck company packed helm popup smartparens iedit notmuch f dash s projectile window-purpose imenu-list helm-core org-plus-contrib powerline all-the-icons font-utils visual-fill-column evil goto-chg bind-key async org-re-reveal ahk-mode web-mode web-beautify tagedit slim-mode scss-mode sass-mode pug-mode prettier-js impatient-mode simple-httpd helm-css-scss haml-mode emmet-mode counsel-css counsel swiper ivy company-web web-completion-data add-node-modules-path zenburn-theme zen-and-art-theme yasnippet-snippets xterm-color ws-butler writeroom-mode winum white-sand-theme which-key volatile-highlights vi-tilde-fringe uuidgen use-package unicode-fonts unfill undo-tree underwater-theme ujelly-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme treemacs-projectile treemacs-persp treemacs-icons-dired toxi-theme toc-org terminal-here tao-theme tangotango-theme tango-plus-theme tango-2-theme symon symbol-overlay sunny-day-theme sublime-themes subatomic256-theme subatomic-theme string-inflection spaceline-all-the-icons spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme shell-pop seti-theme reverse-theme restart-emacs request rebecca-theme rainbow-delimiters railscasts-theme purple-haze-theme professional-theme popwin planet-theme phoenix-dark-pink-theme phoenix-dark-mono-theme pcre2el password-generator paradox ox-gfm overseer organic-green-theme org-superstar org-rich-yank org-projectile org-present org-pomodoro org-mime org-download org-cliplink org-brain open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme noctilux-theme naquadah-theme nameless mwim mustang-theme multi-term move-text monokai-theme monochrome-theme molokai-theme moe-theme modus-vivendi-theme modus-operandi-theme mmm-mode minimal-theme material-theme markdown-toc majapahit-theme madhat2r-theme macrostep lush-theme lorem-ipsum link-hint light-soap-theme ligature kaolin-themes jbeans-theme jazz-theme ir-black-theme inkpot-theme indent-guide hybrid-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation heroku-theme hemisu-theme helm-xref helm-themes helm-swoop helm-purpose helm-projectile helm-org-rifle helm-org helm-notmuch helm-mode-manager helm-make helm-ls-git helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag hc-zenburn-theme gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate golden-ratio gnuplot gh-md gandalf-theme fuzzy font-lock+ flyspell-correct-helm flycheck-pos-tip flycheck-package flycheck-elsa flx-ido flatui-theme flatland-theme farmhouse-theme fancy-battery eziam-theme eyebrowse expand-region exotica-theme evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-collection evil-cleverparens evil-args evil-anzu eval-sexp-fu espresso-theme eshell-z eshell-prompt-extras esh-help emr elisp-slime-nav editorconfig dumb-jump dracula-theme dotenv-mode doom-themes django-theme dired-quick-sort diminish devdocs define-word darktooth-theme darkokai-theme darkmine-theme darkburn-theme dakrone-theme cyberpunk-theme company-statistics column-enforce-mode color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized clues-theme clean-aindent-mode chocolate-theme cherry-blossom-theme centered-cursor-mode cal-china-x busybee-theme buffer-move bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes aggressive-indent afternoon-theme ace-link ace-jump-helm-line ac-ispell)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

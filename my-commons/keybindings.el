@@ -80,3 +80,6 @@ occurence of CHAR."
 
 ;; To switch window, use Ctrl-o instead of Ctrl-x o
 (global-set-key [(control o)] 'other-window)
+
+;; ÓÃÆ´ÒôÊ××ÖÄ¸ËÑË÷ºº×Ö
+(global-set-key "\C-cs" 'ace-pinyin-jump-char-2)

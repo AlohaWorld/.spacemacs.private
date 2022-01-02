@@ -26,7 +26,6 @@ This function should only modify configuration layer settings."
    ;; a layer lazily. (default t)
    dotspacemacs-ask-for-lazy-installation t
 
-   ;; If non-nil layers with lazy install support are lazy installed.
    ;; List of additional paths where to look for configuration layers.
    ;; Paths must have a trailing slash (i.e. `~/.mycontribs/')
    dotspacemacs-configuration-layer-path '("~/.spacemacs.private/")
@@ -40,9 +39,8 @@ This function should only modify configuration layer settings."
      ;; `M-m f e R' (Emacs style) to install them.
      ;; ----------------------------------------------------------------
      better-defaults
-     chinese
      helm
-     (auto-completion :variables ;; Or optionally just auto-completion without the variables.
+     (auto-completion :variables
                       ;; auto-completion-front-end 'auto-complete
                       auto-completion-return-key-behavior 'complete
                       auto-completion-tab-key-behavior 'cycle
@@ -56,21 +54,111 @@ This function should only modify configuration layer settings."
      multiple-cursors
      treemacs
      ;; Development
-     ;java
+     (lsp :variables
+          lsp-restart 'auto-restart
+          lsp-lens-enable t)
+     ; java
+     (c-c++ :variables
+            c-c++-backend 'lsp-clangd
+            lsp-clients-clangd-executable "c:/Program Files/LLVM/bin/clangd.exe"
+            c-c++-lsp-enable-semantic-highlight 'rainbow
+            ;; When semantic highlighting is enabled then the method that's used
+            ;; to highlight the text relies on Emacs' fastest =font-lock= mechanism.
+            ;; A more accurate but also slower method is to use overlays.
+            c-c++-lsp-semantic-highlight-method 'overlay
+            ;; Debugger(dap integration)
+            c-c++-dap-adapters '(dap-lldb dap-cpptools)
+            c-c++-adopt-subprojects t
+            ;; To organize the file header includes on save
+            c-c++-enable-organize-includes-on-save nil
+            ;; [[http://clang.llvm.org/docs/ClangFormat.html][clang-format]] allows
+            ;; for reformatting either a selected region of code
+            ;; (=clang-format-region=) or a whole buffer (=clang-format-buffer=)
+            ;; according to a style defined in a =.clang-format= file. This file is
+            ;; either located in the same as the file being edited, or in any of its
+            ;; parent directories. If no =.clang-format= file is found, then a default
+            ;; style will be used.
+            c-c++-enable-clang-format-on-save nil
+            ;; If we do NOT need ClangFormat, then we need google-style
+            c-c++-enable-google-style t
+            c-c++-enable-google-newline t
+            ;;  Automatically adds newlines after certain characters
+            c-c++-enable-auto-newline t
+            ;; To prevent projectile from using subproject root when visiting
+            ;; files in a subproject, set c-c++-adopt-subprojects to t.
+            c-c++-adopt-subprojects nil
+            )
+     cmake
      emacs-lisp
      autohotkey
+     (plantuml :variables
+               plantuml-jar-path (concat (car dotspacemacs-configuration-layer-path) "java/plantuml.1.2021.10.jar")
+               org-plantuml-jar-path (concat (car dotspacemacs-configuration-layer-path) "java/plantuml.1.2021.10.jar")
+               )
 
      ;git
 
-     ;; markdown needs an engine to render md files
-     ;; a reasonable choice is pandoc, which is a powerful doc format converter written in haskell
+     ;; Markdown needs an engine to render md files. We use pandoc
      (markdown :variables markdown-command "pandoc")
 
      ;; org-mode setup
      (org :variables
+          ;; org-agenda-files (directory-files-recursively orgPath "\\.org$")
+          org-agenda-files (directory-files orgPath t "\\.org$")
+          org-id-link-to-org-use-id t ;Create ID to make link
           org-enable-github-support t
+          ;; Enforce dependencies in TODO hierarchy
+          ;; org-todo-dependencies-strategy 'naive-auto
+
+          ;; Enable notifications for agenda events
+          org-enable-notifications t
+          org-start-notification-daemon-on-startup t
+
+          ;; ---------------------------------------------------------------------------
+          ;; Org-journal support
+          org-enable-org-journal-support t
+          ;; By default, journal files are stored in =~/Documents/journal/=
+          org-journal-dir (concat orgPath "journal/")
+          ;;To change the journal file name format. Note: do NOT append an extend filename
+          org-journal-file-format "%Y-%m-%d"
+          ;;to have new journal files created with following header
+          org-journal-date-prefix "#+TITLE: "
+          org-journal-date-format "%Y/%m/%d, %A"
+          ;; The default entry is a second level heading (=** =) followed by a
+          ;; timestamp. If you start your journal files with a Title as shown
+          ;; above you may want to adjust entries to start at the first level
+          ;; heading and you may want to change or omit timestamp.
+          org-journal-time-prefix "* "
+          org-journal-time-format ""
+
+          ;;  generates [[https://gohugo.io][Hugo]] -compatible Markdown
+          org-enable-hugo-support t
+
+          ;; To set filename where you want to store project-specific TODOs
+          ;; If this is an absolute path, all todos will be stored in the same
+          ;; file (organized by project)
+          org-projectile-file (concat orgPath "TODOs.org")
+
+          ;; Enable org-brain support
+          org-enable-org-brain-suppor t
+          org-brain-path (concat orgPath "brain")
+
+          ;; Enable org sticky header support
+          org-enable-sticky-header t
+
+          ;; Toggles visibility of emphasis markers, links, subscripts, and
+          ;; superscripts in org mod
+          org-enable-appear-support t
+
           org-enable-reveal-js-support t
           org-re-reveal-root "file:///D://MyDocument/99.Org/reveal.js"
+
+          ;; This will replace the general diary-file settings
+          org-my-diary-file (concat orgPath "diary.org")
+
+          ;; Fontify code in code blocks
+          org-src-fontify-natively t
+
           :bind (:map spacemacs-org-mode-map-root-map ("M-RET" . nil)))
 
      ;; shell
@@ -90,17 +178,23 @@ This function should only modify configuration layer settings."
      theming
 
      ;; chinese input method
-     ; (chinese :variables
-     ;          chinese-default-input-method 'pinyin
-     ;          chinese-enable-fcitx nil)
+     (chinese :variables
+              chinese-default-input-method 'pinyin
+              chinese-enable-fcitx nil)
 
      ;; email processing
      gnus
      notmuch
 
+     ;; Paper writing/reference manager, with ebib support
+     ;(bibtex :variables
+     ;        bibtex-enable-ebib-support t
+     ;        ebib-preload-bib-files '("file:///D://MyDocument/99.Org/ebib/myref.bib")
+             ; ebib-file-search-dirs '("/path-to-documents-directory")
+             ; ebib-import-directory "path-to-e.g.-download-directory"
+     ;        )
      ;; My personal layers
      my-commons
-     ;;my-cygwin ; Now we don't use cygwin, instead, we use msys2
      my-buffer
      my-org
      )
@@ -113,22 +207,8 @@ This function should only modify configuration layer settings."
    ;; `dotspacemacs/user-config'. To use a local version of a package, use the
    ;; `:location' property: '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages
-   '(
-     ;; any packages from melpa just put their names here
-     ; ghc-mod. configuration in dotspacemacs/user-config
-     ; ghc
+   dotspacemacs-additional-packages '()
 
-     ;; Haskell IDE Engine (HIE) 
-     ;lsp-mode  ;; in my-lsp layer
-     ;lsp-ui    ;; in my-lsp layer
-     ;lsp-haskell
-
-     ;; or any packages from github, we need some more configurations
-     ;;(lsp-haskell :location (recipe :fetcher github :repo "emacs-lsp/lsp-haskell"))
-     ;; we do not use emacs chinese input method 
-     ; (pyim-greatdict :location (recipe :fetcher github :repo "tumashu/pyim-greatdict"))
-   )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
 
@@ -183,6 +263,7 @@ It should only modify the values of Spacemacs settings."
    ;; `--insecure' which forces the value of this variable to nil.
    ;; (default t)
    dotspacemacs-elpa-https nil
+
    ;; Maximum allowed time in seconds to contact an ELPA repository.
    ;; (default 5)
    dotspacemacs-elpa-timeout 5
@@ -257,12 +338,19 @@ It should only modify the values of Spacemacs settings."
    ;; number is the project limit and the second the limit on the recent files
    ;; within a project.
    dotspacemacs-startup-lists '((recents . 5)
-                                (projects . 5)
-                                (agenda . 5)
-                                (todos . 5))
+                                )
+                               ; (projects . 5)
+                               ; (agenda . 5)
+                               ; (todos . 5))
 
    ;; True if the home buffer should respond to resize events. (default t)
    dotspacemacs-startup-buffer-responsive t
+
+   ;; Show numbers before the startup list lines. (default t)
+   dotspacemacs-show-startup-list-numbers t
+
+   ;; The minimum delay in seconds between number key presses. (default 0.4)
+   dotspacemacs-startup-buffer-multi-digit-delay 0.4
 
    ;; Default major mode for a new empty buffer. Possible values are mode
    ;; names such as `text-mode'; and `nil' to use Fundamental mode.
@@ -313,21 +401,11 @@ It should only modify the values of Spacemacs settings."
    ;; Default font or prioritized list of fonts. The `:size' can be specified as
    ;; a non-negative integer (pixel size), or a floating-point (point size).
    ;; Point size is recommended, because it's device independent. (default 10.0)
-   dotspacemacs-default-font '(("Microsoft YaHei Mono"
-                                :size 15.0
-                                :weight normal
-                                :width normal
-                                :powerline-scale 1.1)
-;;                               ("Fira Code Light"  ; "Fira Code Retina"
-;;                               :size 15.0
-;;                               :weight light
-;;                               :width normal
-;;                               :powerline-scale 1.1)
-;;                               ("Source Code Pro"
-;;                                :size 15.0
-;;                                :weight normal
-;;                                :width normal
-;;                                :powerline-scale 1.5)
+   dotspacemacs-default-font '(("Fira Code Retina"
+                               :size 11.0
+                               :weight light
+                               :width normal
+                               :powerline-scale 1.1)
                                )
    ;; The leader key
    dotspacemacs-leader-key "SPC"
@@ -354,7 +432,8 @@ It should only modify the values of Spacemacs settings."
    ;; dotspacemacs-major-mode-emacs-leader-key (if window-system "<M-return>" "C-M-m")
    ;; repair M-RET keybindings in spacemacs
    ;; We want M-RET to be a new list item action instead of menu leader key.
-   dotspacemacs-major-mode-emacs-leader-key "C-M-m"
+   ;;dotspacemacs-major-mode-emacs-leader-key "C-M-m"
+   dotspacemacs-major-mode-emacs-leader-key (if window-system "<M-return>" "C-M-m")
 
    ;; These variables control whether separate commands are bound in the GUI to
    ;; the key pairs `C-i', `TAB' and `C-m', `RET'.
@@ -364,20 +443,6 @@ It should only modify the values of Spacemacs settings."
    ;; works in the GUI. (default nil)
    dotspacemacs-distinguish-gui-tab nil
 
-   ;; If non nil `Y' is remapped to `y$' in Evil states. (default nil)
-   dotspacemacs-remap-Y-to-y$ nil
-
-   ;; If non-nil, the shift mappings `<' and `>' retain visual state if used
-   ;; there. (default t)
-   dotspacemacs-retain-visual-state-on-shift t
-
-   ;; If non-nil, J and K move lines up and down when in visual mode.
-   ;; (default nil)
-   dotspacemacs-visual-line-move-text nil
-
-   ;; If non nil, inverse the meaning of `g' in `:substitute' Evil ex-command.
-   ;; (default nil)
-   dotspacemacs-ex-substitute-global nil
    ;; Name of the default layout (default "Default")
    dotspacemacs-default-layout-name "Default"
 
@@ -495,21 +560,21 @@ It should only modify the values of Spacemacs settings."
    ;; the value to quoted `display-graphic-p'. (default t)
    dotspacemacs-mode-line-unicode-symbols t
 
-   ;; Setup spacemacs mode line
-   ; dotspacemacs-mode-line-theme '(all-the-icons :separator 'slant)
-   dotspacemacs-mode-line-theme 'spacemacs
-
    ;; If non-nil smooth scrolling (native-scrolling) is enabled. Smooth
    ;; scrolling overrides the default behavior of Emacs which recenters point
    ;; when it reaches the top or bottom of the screen. (default t)
    dotspacemacs-smooth-scrolling t
 
+   ;; Show the scroll bar while scrolling. The auto hide time can be configured
+   ;; by setting this variable to a number. (default t)
+   dotspacemacs-scroll-bar-while-scrolling t
+
    ;; Control line numbers activation.
    ;; If set to `t', `relative' or `visual' then line numbers are enabled in all
    ;; `prog-mode' and `text-mode' derivatives. If set to `relative', line
    ;; numbers are relative. If set to `visual', line numbers are also relative,
-   ;; but lines are only visual lines are counted. For example, folded lines
-   ;; will not be counted and wrapped lines are counted as multiple lines.
+   ;; but only visual lines are counted. For example, folded lines will not be
+   ;; counted and wrapped lines are counted as multiple lines.
    ;; This variable can also be set to a property list for finer control:
    ;; '(:relative nil
    ;;   :visual nil
@@ -528,9 +593,14 @@ It should only modify the values of Spacemacs settings."
    ;; (default 'evil)
    dotspacemacs-folding-method 'evil
 
-   ;; If non-nil `smartparens-strict-mode' will be enabled in programming modes.
+   ;; If non-nil and `dotspacemacs-activate-smartparens-mode' is also non-nil,
+   ;; `smartparens-strict-mode' will be enabled in programming modes.
    ;; (default nil)
    dotspacemacs-smartparens-strict-mode nil
+
+   ;; If non-nil smartparens-mode will be enabled in programming modes.
+   ;; (default t)
+   dotspacemacs-activate-smartparens-mode t
 
    ;; If non-nil pressing the closing parenthesis `)' key in insert mode passes
    ;; over any automatically added closing parenthesis, bracket, quote, etc...
@@ -578,6 +648,9 @@ It should only modify the values of Spacemacs settings."
    ;; %n - Narrow if appropriate
    ;; %z - mnemonics of buffer, terminal, and keyboard coding systems
    ;; %Z - like %z, but including the end-of-line format
+   ;; If nil then Spacemacs uses default `frame-title-format' to avoid
+   ;; performance issues, instead of calculating the frame title by
+   ;; `spacemacs/title-prepare' all the time.
    ;; (default "%I@%S")
    dotspacemacs-frame-title-format "%I@%S"
 
@@ -595,12 +668,15 @@ It should only modify the values of Spacemacs settings."
    ;; (default nil)
    dotspacemacs-whitespace-cleanup nil
 
-   ;; If non nil activate `clean-aindent-mode' which tries to correct
-   ;; virtual indentation of simple modes. This can interfer with mode specific
+   ;; If non-nil activate `clean-aindent-mode' which tries to correct
+   ;; virtual indentation of simple modes. This can interfere with mode specific
    ;; indent handling like has been reported for `go-mode'.
    ;; If it does deactivate it here.
    ;; (default t)
    dotspacemacs-use-clean-aindent-mode t
+
+   ;; Accept SPC as y for prompts if non-nil. (default nil)
+   dotspacemacs-use-SPC-as-y nil
 
    ;; If non-nil shift your number row to match the entered keyboard layout
    ;; (only in insert state). Currently supported keyboard layouts are:
@@ -619,7 +695,7 @@ It should only modify the values of Spacemacs settings."
    dotspacemacs-pretty-docs nil
 
    ;; If nil the home buffer shows the full path of agenda items
-   ;; and todos. If non nil only the file name is shown.
+   ;; and todos. If non-nil only the file name is shown.
    dotspacemacs-home-shorten-agenda-source nil
 
    ;; If non-nil then byte-compile some of Spacemacs files.
@@ -652,16 +728,57 @@ This function is called immediately after `dotspacemacs/init', before layer
 configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
-  ;; Put the custom settings in a file other than current dot-spacemacs file
-  (setq custom-file "~/.emacs.d/.cache/.custom-settings")
-  (load custom-file)
+
+  ;; Setup proxy
+   ;; (setq url-proxy-services
+   ;;    '(("no_proxy" . "^\\(localhost\\|10\\..*\\|192\\.168\\..*\\)")
+   ;;      ("http" . "127.0.0.1:20080")
+   ;;      ("https" . "127.0.0.1:20080")))
+
   ;; Setup modifications for themes
   (setq theming-modifications
-       '((solarized-dark-high-contrast
-          (default :background "black")
-          )))
+        '((solarized-dark-high-contrast
+           (default :background "black")
+           )))
 
-  )
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup all the necessary directories
+  ;; The following directories are all global variables
+  ;; 为Windows下的emacs增加加载路径
+  ;; setq 序列 (concat 序列 " " (int-to-string 变量))
+
+  (if (eq system-type 'windows-nt)
+      (defconst myDocument "D:/MyDocument/"))
+
+  (if (eq system-type 'gnu/linux)
+  	  (defconst myDocument "~/Documents/"
+        "Dir where I usually work in Linux"))
+
+  ;; This is a private dir. All personal modifications and settings are stored
+  ;; here. All personal configuration-layers are also stored here. All layers are
+  ;; stored in subdirs
+  (defconst basicPath "~/.spacemacs.private/"
+	  "Basic path for any customized dirs in emacs which will be version controlled with git" )
+
+  (defconst audioPath (concat basicPath "audio/")
+    "Path to store audio files used in emacs")
+
+  (defconst varPath (concat basicPath "var/")
+    "Path for run-time storage" )
+
+  (if (eq system-type 'windows-nt)
+      (defconst orgPath (concat myDocument "99.Org/")
+        "Path for all .org files under windows" ))
+
+  (if (eq system-type 'gnu/linux)
+      (defconst orgPath (concat myDocument "99.org/")
+        "Path for all .org files under linux" ))
+
+  (setq bibtex-completion-bibliography (concat orgPath "Papers/references.bib")
+        bibtex-completion-library-path (concat orgPath "Papers/")
+        bibtex-completion-notes-path (concat orgPath "Papers/notes.org"))
+
+  ) ;; end def dotspacemacs/user-init ()
 
 (defun dotspacemacs/user-load ()
   "Library to load while dumping.
@@ -677,7 +794,7 @@ configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
 
-  ;; -----------------------------------------------------------------
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Check the paths in load-path exist or not if not exists then prompt errors
   ;; (dolist (pathx load-path)
   ;;   (if (equal nil (file-directory-p pathx))
@@ -685,35 +802,33 @@ before packages are loaded."
   ;;     )
   ;;   )
 
-  ;; ----------------------------------------------------------------
-  ;; Haskell IDE Engine (HIE)
-  ;; Moreover, we also needs to set the logfile, the steps are:
-  ;;    M-x Customize
-  ;;    C-s lsp-haskell
-  ;;    unfold "Lsp Haskell Process Args Hie"
-  ;;    in the 3rd argument, fill: (concat spacemacs-cache-directory "hie.log")
-  ;(require 'lsp-haskell)
-  ;(custom-set-variables
-  ; '(lsp-haskell-process-args-hie
-  ;   (quote
-  ;    ("-d" "-l" "d:/home/cyd/.emacs.d/.cache/hie.log")))
-  ; )
-  ;(add-hook 'haskell-mode-hook #'lsp)
-  ;; https://github.com/emacs-lsp/lsp-haskell # installation
-  ;(add-hook 'haskell-mode-hook 'flycheck-mode)
+  ;; The directory that appears in the prompt for C-x C-f ('find-file') comes from
+  ;; the value of default-directory, which is a buffer-local variable. When you
+  ;; first start Emacs, the initial buffer displayed is the GNU Emacs buffer.
+  ;; That buffer's default-directory is set from the variable
+  ;; =command-line-default-directory=.
+  (setq command-line-default-directory myDocument )
 
-  ;;光标靠近鼠标的时候，让鼠标自动让开，别挡住视线
-  (mouse-avoidance-mode 'animate)
+  ;; Set the default dir when using C-x C-f to open files
+  ;; 2018/01/07 Seems this configuration does not work. see above comments
+  ;; Because the variable "default-directory" is a buffer-local variables
+  (setq default-directory myDocument)
 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; setup chinese fonts
   (dolist (charset '(kana han symbol cjk-misc bopomofo))
+    ;; (set-fontset-font (frame-parameter nil 'font)
+    ;;    charset (font-spec :family "Microsoft YaHei Mono")
+    ;;    charset (font-spec :family "Noto Sans Mono CJK SC Regular"
+    ;;                       :size 15.0))
+    ;; (setq face-font-rescale-alist '(("Microsoft YaHei Mono" . 1.2)))
     (set-fontset-font (frame-parameter nil 'font)
-                      charset (font-spec :family "Microsoft YaHei Mono" :size 15.0)
-                     ; charset (font-spec :family "Noto Sans Mono CJK SC Regular" :size 15.0)
-                      ))
+                      charset (font-spec :family "华文楷体"))
+    ;; (setq face-font-rescale-alist '(("华文楷体" . 1.3))) ;Fira 13
+    (setq face-font-rescale-alist '(("华文楷体" . 1.3)) ; Fira 11
+    ) ;; end dolist
 
-   ;; Set current window size to golden ratio(0.618)
-  ;; And automatically change window size when focus moves to another window
+  ;; Set current window size to golden ratio(0.618)
   ;; (golden-ratio-mode t)
 
   ;; 设置stardict查词
@@ -721,42 +836,60 @@ before packages are loaded."
   ;; (if (eq system-type 'windows-nt)
   ;;     (load "init-stardict"))
 
+  ;; org-wild-notifier uses the [[https://melpa.org/#/alert][alert]] package for
+  ;; showing notifications
+  (setq alert-default-style 'notifications)
 
-  ;; Emacs启动之后，首先显示日程列表
-  (eyebrowse-switch-to-window-config-1)
-  (setq org-agenda-window-setup 'current-window)
-  (org-agenda-list)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Since version 0.300, spacemacs uses the =org= version from the ELPA repository
+  ;; instead of the one shipped with emacs. Then, any =org= related code should not
+  ;; be loaded before =dotspacemacs/user-config=, otherwise both versions will be
+  ;; loaded and will conflict.
+  ;;; 将org layer中设置好的org-projectile-todo-files 加入到org-agenda中
+  (with-eval-after-load 'org-agenda
+    (require 'org-projectile)
+    (mapcar '(lambda (file)
+               (when (file-exists-p file)
+                 (when (not (member file org-agenda-files))
+                   (push file org-agenda-files) )))
+            (org-projectile-todo-files)))
 
-  ;; Display org-agenda-list will flash the frame.
-  ;; After split the frame into windows, we maximize the frame
+  (with-eval-after-load 'org
+    ;; Org related directories
+    ;; Set to the location of your Org files on your local system
+    (setq org-directory orgPath)
 
-  ;; (sleep-for 1)
-  (toggle-frame-maximized)
+    ;; Emacs启动之后，首先显示日程列表
+    ;; (eyebrowse-switch-to-window-config-1)
+    ;; (setq org-agenda-window-setup 'current-window)
+    (org-agenda-list)
+    ;; (sleep-for 1)
+    ;; (toggle-frame-maximized)
+    )
 
-  ;; Setup modifications for themes
-  ;;  (setq theming-modifications
-  ;;        '((solarized-dark-high-contrast
-  ;;           (default :background "black")
-  ;;           )))
+  ;;; To permanently enable mode line display of org clock
+  (setq spaceline-org-clock-p t)
 
-  ;; Fixes undefined functions at startup
-  ;; expand-file-name: Symbol’s function definition is void: helm-current-directory ;(require 'helm)
-  ;(require 'tramp)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; C++编译时若Makefile与源码不在同一目录，（一般在build目录）中，使用Project
+  ;; 根目录下面的.dir-locals.el文件指定。该文件中一般会这样写：
+  ;;   ((c++-mode (helm-make-build-dir . "build/")))
+  ;; 指明Makefile所在目录。但是emacs会抱怨该目录不安全，因此让emacs闭嘴的方法：
+  (put 'helm-make-build-dir 'safe-local-variable 'stringp)
 
-  ;;////////////////////////////////////////////////////////////////////////////
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Input Method
-  ;; (setq default-input-method "pyim")
-  ;; (global-set-key (kbd "C-\\") 'toggle-input-method)
-  ;;     (custom-set-variables
-  ;;      ;; Here we config pyim dictionary
-  ;;      '(pyim-dicts
-  ;;        (quote (:name "pyim-greatdict"
-  ;;                      :file "d:/home/cyd/.spacemacs.private/local/pyim-greatdict.pyim"
-  ;;                      :coding utf-8-unix
-  ;;                      :dict-type pinyin-dict)))
-  ;;      '(pyim-page-tooltip t)
-  ;;      ) ;; end custom-set-variables
-  )
+  (setq default-input-method "pyim")
+  (global-set-key (kbd "C-\\") 'toggle-input-method)
+
+  ;;光标靠近鼠标的时候，让鼠标自动让开，别挡住视线
+  (mouse-avoidance-mode 'animate)
+
+  ;; 光标停留在一个括号上时，令配对括号反显
+  (setq show-paren-delay 0)
+  (show-paren-mode t)
+
+) ; end user-config
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
@@ -772,17 +905,35 @@ This function is called at the very end of Spacemacs initialization."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(cookie-file "~/fortunes/tao")
- '(evil-want-Y-yank-to-eol nil)
- '(highlight-parentheses-colors '("#3cafa5" "#c49619" "#3c98e0" "#7a7ed2" "#93a61a"))
+ '(hl-todo-keyword-faces
+   '(("TODO" . "#dc752f")
+     ("NEXT" . "#dc752f")
+     ("THEM" . "#2d9574")
+     ("PROG" . "#4f97d7")
+     ("OKAY" . "#4f97d7")
+     ("DONT" . "#f2241f")
+     ("FAIL" . "#f2241f")
+     ("DONE" . "#86dc2f")
+     ("NOTE" . "#b1951d")
+     ("KLUDGE" . "#b1951d")
+     ("HACK" . "#b1951d")
+     ("TEMP" . "#b1951d")
+     ("FIXME" . "#dc752f")
+     ("XXX+" . "#dc752f")
+     ("\\?\\?\\?+" . "#dc752f")))
  '(org-modules
-   '(ol-bbdb ol-bibtex org-crypt ol-gnus org-id ol-info ol-jsinfo org-habit org-inlinetask ol-irc ol-mew ol-mhe org-protocol ol-rmail ol-vm ol-wl ol-w3m))
+   '(ol-bbdb ol-bibtex ol-gnus org-habit org-id ol-info org-inlinetask org-tempo ol-jsinfo org-habit org-inlinetask ol-irc ol-mew ol-mhe org-protocol ol-rmail ol-vm ol-wl ol-w3m))
  '(package-selected-packages
-   '(pyim xr pangu-spacing find-by-pinyin-dired chinese-conv ace-pinyin pinyinlib gnu-elpa-keyring-update cfrs posframe markdown-mode flyspell-correct package-lint flycheck company packed helm popup smartparens iedit notmuch f dash s projectile window-purpose imenu-list helm-core org-plus-contrib powerline all-the-icons font-utils visual-fill-column evil goto-chg bind-key async org-re-reveal ahk-mode web-mode web-beautify tagedit slim-mode scss-mode sass-mode pug-mode prettier-js impatient-mode simple-httpd helm-css-scss haml-mode emmet-mode counsel-css counsel swiper ivy company-web web-completion-data add-node-modules-path zenburn-theme zen-and-art-theme yasnippet-snippets xterm-color ws-butler writeroom-mode winum white-sand-theme which-key volatile-highlights vi-tilde-fringe uuidgen use-package unicode-fonts unfill undo-tree underwater-theme ujelly-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme treemacs-projectile treemacs-persp treemacs-icons-dired toxi-theme toc-org terminal-here tao-theme tangotango-theme tango-plus-theme tango-2-theme symon symbol-overlay sunny-day-theme sublime-themes subatomic256-theme subatomic-theme string-inflection spaceline-all-the-icons spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme shell-pop seti-theme reverse-theme restart-emacs request rebecca-theme rainbow-delimiters railscasts-theme purple-haze-theme professional-theme popwin planet-theme phoenix-dark-pink-theme phoenix-dark-mono-theme pcre2el password-generator paradox ox-gfm overseer organic-green-theme org-superstar org-rich-yank org-projectile org-present org-pomodoro org-mime org-download org-cliplink org-brain open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme noctilux-theme naquadah-theme nameless mwim mustang-theme multi-term move-text monokai-theme monochrome-theme molokai-theme moe-theme modus-vivendi-theme modus-operandi-theme mmm-mode minimal-theme material-theme markdown-toc majapahit-theme madhat2r-theme macrostep lush-theme lorem-ipsum link-hint light-soap-theme ligature kaolin-themes jbeans-theme jazz-theme ir-black-theme inkpot-theme indent-guide hybrid-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation heroku-theme hemisu-theme helm-xref helm-themes helm-swoop helm-purpose helm-projectile helm-org-rifle helm-org helm-notmuch helm-mode-manager helm-make helm-ls-git helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag hc-zenburn-theme gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate golden-ratio gnuplot gh-md gandalf-theme fuzzy font-lock+ flyspell-correct-helm flycheck-pos-tip flycheck-package flycheck-elsa flx-ido flatui-theme flatland-theme farmhouse-theme fancy-battery eziam-theme eyebrowse expand-region exotica-theme evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-collection evil-cleverparens evil-args evil-anzu eval-sexp-fu espresso-theme eshell-z eshell-prompt-extras esh-help emr elisp-slime-nav editorconfig dumb-jump dracula-theme dotenv-mode doom-themes django-theme dired-quick-sort diminish devdocs define-word darktooth-theme darkokai-theme darkmine-theme darkburn-theme dakrone-theme cyberpunk-theme company-statistics column-enforce-mode color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized clues-theme clean-aindent-mode chocolate-theme cherry-blossom-theme centered-cursor-mode cal-china-x busybee-theme buffer-move bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes aggressive-indent afternoon-theme ace-link ace-jump-helm-line ac-ispell)))
+   '(org-wild-notifier helm-ctest cmake-mode zonokai-emacs ox-gfm ligature inspector info+ gendoxy cal-china-x buffer-move font-lock+ zenburn-theme zen-and-art-theme yasnippet-snippets xterm-color ws-butler writeroom-mode winum white-sand-theme which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package unicode-fonts unfill undo-tree underwater-theme ujelly-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme treemacs-projectile treemacs-persp treemacs-icons-dired toxi-theme toc-org terminal-here tao-theme tangotango-theme tango-plus-theme tango-2-theme tagedit symon symbol-overlay sunny-day-theme sublime-themes subatomic256-theme subatomic-theme string-inflection string-edit spaceline-all-the-icons spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme slim-mode shell-pop seti-theme scss-mode sass-mode reverse-theme restart-emacs rebecca-theme rainbow-delimiters railscasts-theme quickrun pyim purple-haze-theme pug-mode professional-theme prettier-js popwin plantuml-mode planet-theme phoenix-dark-pink-theme phoenix-dark-mono-theme pcre2el password-generator paradox pangu-spacing overseer organic-green-theme org-superstar org-rich-yank org-re-reveal org-projectile org-present org-pomodoro org-mime org-download org-contrib org-cliplink open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme noctilux-theme naquadah-theme nameless mwim mustang-theme multi-term multi-line monokai-theme monochrome-theme molokai-theme moe-theme modus-vivendi-theme modus-operandi-theme mmm-mode minimal-theme material-theme markdown-toc majapahit-theme madhat2r-theme macrostep lush-theme lsp-ui lsp-origami lorem-ipsum link-hint light-soap-theme kaolin-themes jbeans-theme jazz-theme ir-black-theme inkpot-theme indent-guide impatient-mode hybrid-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation heroku-theme hemisu-theme helm-xref helm-themes helm-swoop helm-rtags helm-purpose helm-projectile helm-org-rifle helm-org helm-notmuch helm-mode-manager helm-make helm-lsp helm-ls-git helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag hc-zenburn-theme gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate google-c-style golden-ratio gnuplot gh-md gandalf-theme fuzzy flyspell-correct-helm flycheck-ycmd flycheck-rtags flycheck-pos-tip flycheck-package flycheck-elsa flx-ido flatui-theme flatland-theme find-by-pinyin-dired farmhouse-theme fancy-battery eziam-theme eyebrowse expand-region exotica-theme evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-collection evil-cleverparens evil-args evil-anzu eval-sexp-fu espresso-theme eshell-z eshell-prompt-extras esh-help emr emmet-mode elisp-slime-nav editorconfig dumb-jump drag-stuff dracula-theme dotenv-mode doom-themes django-theme disaster dired-quick-sort diminish define-word darktooth-theme darkokai-theme darkmine-theme darkburn-theme dap-mode dakrone-theme cyberpunk-theme cpp-auto-include company-ycmd company-web company-statistics company-rtags company-c-headers column-enforce-mode color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized clues-theme clean-aindent-mode chocolate-theme chinese-conv cherry-blossom-theme centered-cursor-mode ccls busybee-theme bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes ahk-mode aggressive-indent afternoon-theme ace-pinyin ace-link ace-jump-helm-line ac-ispell))
+ '(pdf-view-midnight-colors '("#b2b2b2" . "#292b2e"))
+ '(pyim-dicts
+   '(:name "pyim-greatdict" :file "d:/home/cyd/.spacemacs.private/local/pyim-greatdict.pyim" :coding utf-8-unix :dict-type pinyin-dict))
+ '(pyim-page-tooltip t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((((class color) (min-colors 89)) (:foreground "#8d9fa1" :background "#002732"))))
- '(org-mode-line-clock ((t (:background "grey75" :foreground "red" :box (:line-width -1 :style released-button))))))
+ '(org-mode-line-clock ((t (:background "black" :foreground "red" :box (:line-width -1 :style released-button)))))
+ '(show-paren-match ((t (:foreground "black" :background "red")))))
 )

@@ -57,15 +57,140 @@
 ;; https://github.com/haskell/haskell-mode/issues/400
 (setq default-process-coding-system '(cp936-dos . utf-8-unix))
 
-;; Setup the general paths
-(load "config-path.el")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Setup the shell (msys zsh)
+;; !!!!!!!! BE AWARE !!!!!!!!
+;; When using lsp-haskell, hie-wrapper is invoked with the following shell
+;; One must check if hie-wrapper is running smoothly under emacs shell
+;;    TO TEST
+;; M-x shell
+;; hie-wrapper --lsp -d -l C:/temp/hie.log
+;;    Then see c:/temp/hie.log
+
+;; !!!!!!!! BE AWARE !!!!!!!!
+;; When updating OS path, delete ~/.spacemacs.env
+;; OR you will not see the path in emacs being updated!!!
+
+;; (when (eq system-type 'windows-nt)
+;;   (if (file-exists-p "C:/msys64/usr/bin/zsh.exe")
+;;     (progn
+;;       (setq explicit-shell-file-name "C:/msys64/usr/bin/zsh.exe")
+;;       (setq shell-file-name "zsh")
+;;       ;; (setq explicit-bash.exe-args '("--noediting" "--login" "-i"))
+;;       ;; (setq explicit-zsh.exe-args '("--emacs" "--login"))
+;;       (setenv "SHELL" shell-file-name)
+;;       ;; remove the input Ctrl-M character
+;;       (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m)
+;;       (add-to-list 'process-coding-system-alist
+;;         '("zsh" . (undecided-dos . undecided-unix)))
+;;     )
+;;     (message "Can not find C:/msys64/usr/bin/zsh.exe. Keep the shell as-is(cmd.exe)")
+;;   )
+;; )
+
+;; (when (eq system-type 'windows-nt)
+;;   (if (file-exists-p "C:/Windows/System32/cmd.exe")
+;;     (progn
+;;       (setq explicit-shell-file-name "C:/Windows/System32/cmd.exe")
+;;       (setq shell-file-name "cmd")
+;;       ;; (setq explicit-bash.exe-args '("--noediting" "--login" "-i"))
+;;       ;; (setq explicit-zsh.exe-args '("--emacs" "--login"))
+;;       (setenv "SHELL" shell-file-name)
+;;       ;; remove the input Ctrl-M character
+;;       (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m)
+;;       (add-to-list 'process-coding-system-alist
+;;         '("cmd" . (undecided-dos . undecided-unix)))
+;;     )
+;;     (message "Can not find C:/Windows/System32/cmd.exe")
+;;   )
+;; )
 
 
+(autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
+(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on t)
 
-;; Setup the shell (cygwin zsh)
-(load "config-shell.el")
+(defun powershell (&optional buffer)
+  "Launches a powershell in buffer *powershell* and switches to it."
+  (interactive)
+  (let ((buffer (or buffer "*powershell*"))
+        (powershell-prog "c:\\Program Files\\PowerShell\\7\\pwsh.exe"))
+    (make-comint-in-buffer "shell" "*powershell*" powershell-prog)
+    (switch-to-buffer buffer)))
 
+(defun zsh (&optional buffer)
+  "Launches a msys2/zsh in buffer *zsh* and switches to it."
+  (interactive)
+  (let ((buffer (or buffer "*zsh*"))
+        (zsh-prog "c:\\msys64\\usr\\bin\\zsh.exe")
+       )
+    (make-comint-in-buffer "shell" "*zsh*" zsh-prog)
+    (switch-to-buffer buffer)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Configuration about editing/viewing environment
-;; cyd@20160739
-(load "config-editview.el")
+
+;; Setup Emacs title text
+(setq frame-title-format
+      `("%b  " (:eval (if (buffer-modified-p) "※")) " → "
+        (dired-directory dired-directory " %f → ")
+        (:eval user-login-name) "@" (:eval system-name)  ))
+
+;; auto-fill-mode: When the length of a line exceeds a limit, the text will
+;; auto wrap
+;; Automatically turn on auto-fill-mode when editing text files
+(add-hook 'text-mode-hook 'turn-on-auto-fill)
+
+;; The word wrap column
+(setq-default fill-column 80)
+
+;; Recognize chinese punctuation
+;; We do not need to insert two space characters after a period punctuation
+(setq sentence-end "\\([。！？]\\|……\\|[.?!][]\"')}]*\\($\\|[ \t]\\)\\)[ \t\n]*")
+(setq sentence-end-double-space nil)
+
+;; How do I control Emacs's case-sensitivity when searching/replacing?
+;; For searching, the value of the variable case-fold-search determines
+;; whether they are case sensitive. non-nil to make searches case insensitive
+(setq case-fold-search t)
+
+
+;; 打开time-stamp可以记录最后运行time-stamp的时间
+;;		缺省的情况下, 在所编辑文件的前八行内插入如下标记
+;;			Time-stamp: <>   或者
+;;			Time-stamp: " "
+;;		Emacs在保存时就会运行write-file-hooks中的time-stamp, 从而加 入修改时间,
+;;		结果类似下面所示
+;;			Time-stamp: <jerry 12/17/2003 12:00:54 (unidevel.com)>
+(add-hook 'write-file-hooks 'time-stamp)
+(setq time-stamp-format "%:u %04y/%02m/%02d %02H:%02M:%02S")
+
+;; 要使用中文表示, 可以如下设置，"最后更新时间:"行后所有字符都将
+;; 无条件被替换为"XXXX年XX月XX日" 格式的时间
+(setq time-stamp-start "Last Update:[     ]+\\\\?")
+(setq time-stamp-end: "\n")
+;; (setq time-stamp-format: "%:y年%:m月%:d日")
+(setq time-stamp-active t)
+(setq time-stamp-warn-inactive t)
+
+
+;; ===================================================================
+;; Set tab width to 4 spaces, replacing the original 2 spaces
+(setq default-tab-width 4)
+
+;; Suppress "Yes/No" confirmation messages
+(defun yes-or-no-p (arg)
+  "An alias for y-or-n-p, because I hate having to type 'yes' or 'no'."
+  (y-or-n-p arg))
+
+;; Keep cursor at the end of a line when moving up and down
+(setq track-eol t)
+
+;; Set default mode to text-mode ,not fundamental
+(setq default-major-mode 'text-mode)
+
+;; =========================================================
+;; 查找和替换
+;; query-replace-regexp is bound by default to C-M-%, although
+;;    some people prefer using an alias like M-x qrr. Put the
+;;    following in your InitFile to create such alias.
+(defalias 'qrr 'query-replace-regexp)

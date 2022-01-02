@@ -14,8 +14,6 @@
 (define-key global-map "\C-cl" 'org-store-link)
 ;; C-c a 进入日程表
 (define-key global-map "\C-ca" 'org-agenda) 
-;; 切换 org文件 buffer
-(global-set-key "\C-cb" 'org-iswitchb)
 
 
 ;; ======= 4.6 Key bindings ====================================================

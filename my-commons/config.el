@@ -13,7 +13,7 @@
 (setq user-full-name "Cui Yidong")
 (setq user-mail-address "cyd@bupt.edu.cn")
 
-;; -----------------------------------------------------------------------------
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Calendar & Diary
 ;; Setup altitude and logitude. Then we can get sunrise/sunset time in calendar
 (setq calendar-latitude 39.55)          ;; Altitude, positive number ==> north
@@ -26,8 +26,8 @@
 ;; cyd@20190902
 (setq calendar-week-start-day 1)        ; Make Monday the first day of a week
 
-;; GnuEmacs 23.1 introduced the variable calendar-intermonth-text that can be
-;; used for displaying ISO week numbers in the Calendar window
+;; The variable calendar-intermonth-text can be used to display ISO week numbers
+;; in the Calendar window
 (copy-face font-lock-constant-face 'calendar-iso-week-face)
 (set-face-attribute 'calendar-iso-week-face nil
                     :height 1.0)
@@ -52,6 +52,7 @@
                     :height 1.0 :foreground "salmon")
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup Coding page
 ;; To solve "Some unexpected code \241\256 in Interactive-Haskell mode"
 ;; https://github.com/haskell/haskell-mode/issues/400
@@ -126,6 +127,7 @@
     (make-comint-in-buffer "shell" "*zsh*" zsh-prog)
     (switch-to-buffer buffer)))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Configuration about editing/viewing environment
 
@@ -134,14 +136,6 @@
       `("%b  " (:eval (if (buffer-modified-p) "※")) " → "
         (dired-directory dired-directory " %f → ")
         (:eval user-login-name) "@" (:eval system-name)  ))
-
-;; auto-fill-mode: When the length of a line exceeds a limit, the text will
-;; auto wrap
-;; Automatically turn on auto-fill-mode when editing text files
-(add-hook 'text-mode-hook 'turn-on-auto-fill)
-
-;; The word wrap column
-(setq-default fill-column 80)
 
 ;; Recognize chinese punctuation
 ;; We do not need to insert two space characters after a period punctuation
@@ -155,15 +149,14 @@
 
 
 ;; 打开time-stamp可以记录最后运行time-stamp的时间
-;;		缺省的情况下, 在所编辑文件的前八行内插入如下标记
+;; 缺省的情况下, 在所编辑文件的前八行内插入如下标记
 ;;			Time-stamp: <>   或者
 ;;			Time-stamp: " "
-;;		Emacs在保存时就会运行write-file-hooks中的time-stamp, 从而加 入修改时间,
-;;		结果类似下面所示
+;; Emacs在保存时就会运行write-file-hooks中的time-stamp, 从而加 入修改时间,
+;; 结果类似下面所示
 ;;			Time-stamp: <jerry 12/17/2003 12:00:54 (unidevel.com)>
 (add-hook 'write-file-hooks 'time-stamp)
 (setq time-stamp-format "%:u %04y/%02m/%02d %02H:%02M:%02S")
-
 ;; 要使用中文表示, 可以如下设置，"最后更新时间:"行后所有字符都将
 ;; 无条件被替换为"XXXX年XX月XX日" 格式的时间
 (setq time-stamp-start "Last Update:[     ]+\\\\?")
@@ -172,8 +165,6 @@
 (setq time-stamp-active t)
 (setq time-stamp-warn-inactive t)
 
-
-;; ===================================================================
 ;; Set tab width to 4 spaces, replacing the original 2 spaces
 (setq default-tab-width 4)
 
@@ -187,8 +178,14 @@
 
 ;; Set default mode to text-mode ,not fundamental
 (setq default-major-mode 'text-mode)
+;; auto-fill-mode: When the length of a line exceeds a limit, the text will
+;; auto wrap
+(add-hook 'text-mode-hook 'turn-on-auto-fill)
+;; The word wrap column
+(setq-default fill-column 80)
 
-;; =========================================================
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 查找和替换
 ;; query-replace-regexp is bound by default to C-M-%, although
 ;;    some people prefer using an alias like M-x qrr. Put the

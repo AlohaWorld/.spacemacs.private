@@ -1,0 +1,8 @@
+solarized-dark-high-contrast    ;  不刺眼，字色比较暗淡，但是org二级标题图表有点小，三级图标有问题
+noctilux                        ; 中等，有些配色稍显刺眼
+wilson                          ; 柔和，少量org属性太白
+zenburn                         ; 配色柔和，但是背景不是纯黑
+seti                            ; 纯黑背景，对比度稍高，但是白色字体不刺眼
+doom-solarized-dark             ; 对比度低，字体浅灰不刺眼
+darkburn                        ; 纯黑背景，对比度中等；亮色字体非纯白可接受，org图标大但二级三级有问题
+cyberpunk                       ; 蓝色紫色可接受

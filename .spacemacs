@@ -50,14 +50,12 @@ This function should only modify configuration layer settings."
                       auto-completion-private-snippets-directory  (concat (car dotspacemacs-configuration-layer-path) "snippets/")
                       auto-completion-enable-sort-by-usage t
       )
-     html
      multiple-cursors
      treemacs
      ;; Development
      (lsp :variables
           lsp-restart 'auto-restart
           lsp-lens-enable t)
-     ; java
      (c-c++ :variables
             c-c++-backend 'lsp-clangd
             lsp-clients-clangd-executable "c:/Program Files/LLVM/bin/clangd.exe"
@@ -92,21 +90,32 @@ This function should only modify configuration layer settings."
      emacs-lisp
      autohotkey
      (plantuml :variables
-               plantuml-jar-path (concat (car dotspacemacs-configuration-layer-path) "java/plantuml.1.2021.10.jar")
-               org-plantuml-jar-path (concat (car dotspacemacs-configuration-layer-path) "java/plantuml.1.2021.10.jar")
+               plantuml-jar-path (concat (car dotspacemacs-configuration-layer-path)
+                                         "java/plantuml-1.2021.16.jar")
+               org-plantuml-jar-path (concat (car dotspacemacs-configuration-layer-path)
+                                             "java/plantuml-1.2021.16.jar")
                )
-
      ;git
+     ;; spell & syntax checking
+     spell-checking
+     (syntax-checking :variables
+                      syntax-checking-enable-tooltips t)
 
      ;; Markdown needs an engine to render md files. We use pandoc
      (markdown :variables markdown-command "pandoc")
 
      ;; org-mode setup
      (org :variables
+          ;; 设置变量org-agenda-files让Org-Mode知道在哪些文件搜寻TODO
+          ;; Push all .org files in the path to the file list
           ;; org-agenda-files (directory-files-recursively orgPath "\\.org$")
-          org-agenda-files (directory-files orgPath t "\\.org$")
+          ;; org-agenda-files (directory-files orgPath t "\\.org$")
+          org-agenda-files (list (concat orgPath "TODOs.org")
+                                 (concat orgPath "refile.org"))
+
+
           org-id-link-to-org-use-id t ;Create ID to make link
-          org-enable-github-support t
+          org-enable-github-support nil; with t, emacs fork a process to do git sync which consumes cpu
           ;; Enforce dependencies in TODO hierarchy
           ;; org-todo-dependencies-strategy 'naive-auto
 
@@ -161,14 +170,36 @@ This function should only modify configuration layer settings."
 
           :bind (:map spacemacs-org-mode-map-root-map ("M-RET" . nil)))
 
+     ;; html is required by org-export
+     html
+     ;; pdf, which needs pdf-tools
+     pdf
+     ;; latex needs texlive software. Install independent texlive software or msys2
+     ;; texlive package. e.g. pacman -Ss texlive and then install related packages
+     ;; mingw-w64-x86_64-texlive
+     ;; core, latex-recommended, latex-extra, extra-util, bibtex-extra, plain-generic, lang-chinese, science
+     ;; to support cjk fonts in latex, add the following lines in tex file
+     ;; \usepackage{xeCJK}
+     ;; \setCJKmainfont{微软雅黑}
+     (latex :variables
+            ;; When writing latex documents, the backend support syntax completion
+            ;; Currently, the LaTeX LSP backend depends on TexLab
+            latex-backend 'lsp
+            ;; To get latexmk, under msys2: pacman -S mingw-w64-x86_64-texlive-extra-utils
+            latex-build-command 'latexmk
+            ;; latex-build-command "LaTeX" ; msys2 LaTeX == pdflatex
+            latex-build-engine 'xetex
+            ;; To update the preview buffer whenever the compiled PDF file changes
+            latex-refresh-preview t
+            ;; make =pdf-tools= open in a split window
+            latex-view-pdf-in-split-window nil
+            ;; prefer another pdf viewer to preview
+            latex-view-with-pdf-tools nil
+            latex-enable-folding t)
      ;; shell
      (shell :variables
              shell-default-height 30
              shell-default-position 'bottom)
-
-     ;; spell & syntax checking
-     spell-checking
-     syntax-checking
 
      ;; Fonts
      (unicode-fonts :variables unicode-fonts-enable-ligatures t)
@@ -196,7 +227,9 @@ This function should only modify configuration layer settings."
      ;; My personal layers
      my-commons
      my-buffer
-     my-org
+     (my-org :variables
+             org-enable-latex-support t
+             )
      )
 
    ;; List of additional packages that will be installed without being wrapped
@@ -392,7 +425,7 @@ It should only modify the values of Spacemacs settings."
    ;; refer to the DOCUMENTATION.org for more info on how to create your own
    ;; spaceline theme. Value can be a symbol or list with additional properties.
    ;; (default '(spacemacs :separator wave :separator-scale 1.5))
-   dotspacemacs-mode-line-theme '(spacemacs :separator wave :separator-scale 1.5)
+   dotspacemacs-mode-line-theme '(spacemacs :separator wave :separator-scale 0.6)
 
    ;; If non-nil the cursor color matches the state color in GUI Emacs.
    ;; (default t)
@@ -401,11 +434,13 @@ It should only modify the values of Spacemacs settings."
    ;; Default font or prioritized list of fonts. The `:size' can be specified as
    ;; a non-negative integer (pixel size), or a floating-point (point size).
    ;; Point size is recommended, because it's device independent. (default 10.0)
-   dotspacemacs-default-font '(("Fira Code Retina"
-                               :size 11.0
-                               :weight light
+   dotspacemacs-default-font '(
+                               ;;("Fira Code Retina"
+                               ("Cascadia Code"
+                               :size 13.0
+                               :weight semi-light
                                :width normal
-                               :powerline-scale 1.1)
+                               :powerline-scale 0.8)
                                )
    ;; The leader key
    dotspacemacs-leader-key "SPC"
@@ -739,7 +774,14 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
   (setq theming-modifications
         '((solarized-dark-high-contrast
            (default :background "black")
+           ;; (highlight :background "blue")
            )))
+
+  ;; Setup emacs running environment
+  ;; If uname is from msys2, then sub-system-type is msys
+  (setq uname-os-string (downcase (shell-command-to-string "uname -o")))
+  (defconst windows-msys "msys")
+  (defconst sub-system-type (when (string-prefix-p "msys" uname-os-string) 'windows-msys))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Setup all the necessary directories
@@ -796,11 +838,11 @@ before packages are loaded."
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Check the paths in load-path exist or not if not exists then prompt errors
-  ;; (dolist (pathx load-path)
-  ;;   (if (equal nil (file-directory-p pathx))
-  ;;       (message (concat "MY-INFO: dir does not exist in load-path: " pathx))
-  ;;     )
-  ;;   )
+  (dolist (pathx load-path)
+    (if (equal nil (file-directory-p pathx))
+        (message (concat "MY-INFO: dir does not exist in load-path: " pathx))
+      )
+    )
 
   ;; The directory that appears in the prompt for C-x C-f ('find-file') comes from
   ;; the value of default-directory, which is a buffer-local variable. When you
@@ -814,18 +856,31 @@ before packages are loaded."
   ;; Because the variable "default-directory" is a buffer-local variables
   (setq default-directory myDocument)
 
+  ;; dired-quick-sort depends on the following variable
+  (setq ls-lisp-use-insert-directory-program t)
+  ;; Switches passed to `ls' for Dired.
+  (setq dired-listing-switches
+        (cond ((eq sub-system-type 'windows-msys)   ; Cygwin/msys2 version of Emacs.
+               "-a -F --group-directories-first -l --time-style=long-iso")
+              ((eq system-type 'windows-nt) ; Native Windows version of Emacs.
+               "-a -F -l")
+              ))
+  ;; (message (concat "Variable dired-listing-switches is " dired-listing-switches))
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; setup chinese fonts
   (dolist (charset '(kana han symbol cjk-misc bopomofo))
-    ;; (set-fontset-font (frame-parameter nil 'font)
-    ;;    charset (font-spec :family "Microsoft YaHei Mono")
-    ;;    charset (font-spec :family "Noto Sans Mono CJK SC Regular"
-    ;;                       :size 15.0))
-    ;; (setq face-font-rescale-alist '(("Microsoft YaHei Mono" . 1.2)))
     (set-fontset-font (frame-parameter nil 'font)
-                      charset (font-spec :family "华文楷体"))
-    ;; (setq face-font-rescale-alist '(("华文楷体" . 1.3))) ;Fira 13
-    (setq face-font-rescale-alist '(("华文楷体" . 1.3)) ; Fira 11
+                      ;; charset (font-spec :family "华文楷体")
+                      ;; charset (font-spec :family "微软雅黑")
+                      charset (font-spec :family "华光楷体_CNKI")
+                      ;; charset (font-spec :family "华光小标宋_CNKI")
+                      )
+
+    (setq face-font-rescale-alist '(("华文楷体" . 1.3)
+                                    ("微软雅黑" . 1.3)
+                                    ("华光楷体_CNKI" . 1.2)
+                                    ("华光小标宋_CNKI" . 1.3))) ; Fira 12:1.2; Fira 13:1.3
     ) ;; end dolist
 
   ;; Set current window size to golden ratio(0.618)
@@ -845,15 +900,6 @@ before packages are loaded."
   ;; instead of the one shipped with emacs. Then, any =org= related code should not
   ;; be loaded before =dotspacemacs/user-config=, otherwise both versions will be
   ;; loaded and will conflict.
-  ;;; 将org layer中设置好的org-projectile-todo-files 加入到org-agenda中
-  (with-eval-after-load 'org-agenda
-    (require 'org-projectile)
-    (mapcar '(lambda (file)
-               (when (file-exists-p file)
-                 (when (not (member file org-agenda-files))
-                   (push file org-agenda-files) )))
-            (org-projectile-todo-files)))
-
   (with-eval-after-load 'org
     ;; Org related directories
     ;; Set to the location of your Org files on your local system
@@ -865,6 +911,20 @@ before packages are loaded."
     (org-agenda-list)
     ;; (sleep-for 1)
     ;; (toggle-frame-maximized)
+    )
+
+  ;; 将org layer中设置好的org-projectile-todo-files 加入到org-agenda中
+  ;; (with-eval-after-load 'org-agenda
+  ;;   (require 'org-projectile)
+  ;;   (mapcar (lambda (file)
+  ;;              (when (file-exists-p file)
+  ;;                (when (not (member file org-agenda-files))
+  ;;                  (push file org-agenda-files) )))
+  ;;           (org-projectile-todo-files)))
+
+  (with-eval-after-load 'ox-latex
+    (setf org-latex-default-packages-alist
+          (remove '("AUTO" "inputenc" t) org-latex-default-packages-alist))
     )
 
   ;;; To permanently enable mode line display of org clock
@@ -905,6 +965,8 @@ This function is called at the very end of Spacemacs initialization."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(cookie-file "~/fortunes/tao")
+ '(evil-want-Y-yank-to-eol nil)
+ '(highlight-parentheses-colors '("#3cafa5" "#c49619" "#3c98e0" "#7a7ed2" "#93a61a"))
  '(hl-todo-keyword-faces
    '(("TODO" . "#dc752f")
      ("NEXT" . "#dc752f")
@@ -921,19 +983,21 @@ This function is called at the very end of Spacemacs initialization."
      ("FIXME" . "#dc752f")
      ("XXX+" . "#dc752f")
      ("\\?\\?\\?+" . "#dc752f")))
+ '(org-fontify-done-headline nil)
+ '(org-fontify-todo-headline nil)
  '(org-modules
    '(ol-bbdb ol-bibtex ol-gnus org-habit org-id ol-info org-inlinetask org-tempo ol-jsinfo org-habit org-inlinetask ol-irc ol-mew ol-mhe org-protocol ol-rmail ol-vm ol-wl ol-w3m))
  '(package-selected-packages
-   '(org-wild-notifier helm-ctest cmake-mode zonokai-emacs ox-gfm ligature inspector info+ gendoxy cal-china-x buffer-move font-lock+ zenburn-theme zen-and-art-theme yasnippet-snippets xterm-color ws-butler writeroom-mode winum white-sand-theme which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package unicode-fonts unfill undo-tree underwater-theme ujelly-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme treemacs-projectile treemacs-persp treemacs-icons-dired toxi-theme toc-org terminal-here tao-theme tangotango-theme tango-plus-theme tango-2-theme tagedit symon symbol-overlay sunny-day-theme sublime-themes subatomic256-theme subatomic-theme string-inflection string-edit spaceline-all-the-icons spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme slim-mode shell-pop seti-theme scss-mode sass-mode reverse-theme restart-emacs rebecca-theme rainbow-delimiters railscasts-theme quickrun pyim purple-haze-theme pug-mode professional-theme prettier-js popwin plantuml-mode planet-theme phoenix-dark-pink-theme phoenix-dark-mono-theme pcre2el password-generator paradox pangu-spacing overseer organic-green-theme org-superstar org-rich-yank org-re-reveal org-projectile org-present org-pomodoro org-mime org-download org-contrib org-cliplink open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme noctilux-theme naquadah-theme nameless mwim mustang-theme multi-term multi-line monokai-theme monochrome-theme molokai-theme moe-theme modus-vivendi-theme modus-operandi-theme mmm-mode minimal-theme material-theme markdown-toc majapahit-theme madhat2r-theme macrostep lush-theme lsp-ui lsp-origami lorem-ipsum link-hint light-soap-theme kaolin-themes jbeans-theme jazz-theme ir-black-theme inkpot-theme indent-guide impatient-mode hybrid-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation heroku-theme hemisu-theme helm-xref helm-themes helm-swoop helm-rtags helm-purpose helm-projectile helm-org-rifle helm-org helm-notmuch helm-mode-manager helm-make helm-lsp helm-ls-git helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag hc-zenburn-theme gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate google-c-style golden-ratio gnuplot gh-md gandalf-theme fuzzy flyspell-correct-helm flycheck-ycmd flycheck-rtags flycheck-pos-tip flycheck-package flycheck-elsa flx-ido flatui-theme flatland-theme find-by-pinyin-dired farmhouse-theme fancy-battery eziam-theme eyebrowse expand-region exotica-theme evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-collection evil-cleverparens evil-args evil-anzu eval-sexp-fu espresso-theme eshell-z eshell-prompt-extras esh-help emr emmet-mode elisp-slime-nav editorconfig dumb-jump drag-stuff dracula-theme dotenv-mode doom-themes django-theme disaster dired-quick-sort diminish define-word darktooth-theme darkokai-theme darkmine-theme darkburn-theme dap-mode dakrone-theme cyberpunk-theme cpp-auto-include company-ycmd company-web company-statistics company-rtags company-c-headers column-enforce-mode color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized clues-theme clean-aindent-mode chocolate-theme chinese-conv cherry-blossom-theme centered-cursor-mode ccls busybee-theme bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes ahk-mode aggressive-indent afternoon-theme ace-pinyin ace-link ace-jump-helm-line ac-ispell))
+   '(doom-modeline shrink-path lsp-latex company-reftex company-math math-symbol-lists company-auctex auctex pdf-view-restore pdf-tools tablist simple-httpd haml-mode counsel-css counsel swiper ivy web-completion-data add-node-modules-path org-wild-notifier helm-ctest cmake-mode zonokai-emacs ox-gfm ligature inspector info+ gendoxy cal-china-x buffer-move font-lock+ zenburn-theme zen-and-art-theme yasnippet-snippets xterm-color ws-butler writeroom-mode winum white-sand-theme which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package unicode-fonts unfill undo-tree underwater-theme ujelly-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme treemacs-projectile treemacs-persp treemacs-icons-dired toxi-theme toc-org terminal-here tao-theme tangotango-theme tango-plus-theme tango-2-theme tagedit symon symbol-overlay sunny-day-theme sublime-themes subatomic256-theme subatomic-theme string-inflection string-edit spaceline-all-the-icons spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme slim-mode shell-pop seti-theme scss-mode sass-mode reverse-theme restart-emacs rebecca-theme rainbow-delimiters railscasts-theme quickrun pyim purple-haze-theme pug-mode professional-theme prettier-js popwin plantuml-mode planet-theme phoenix-dark-pink-theme phoenix-dark-mono-theme pcre2el password-generator paradox pangu-spacing overseer organic-green-theme org-superstar org-rich-yank org-re-reveal org-projectile org-present org-pomodoro org-mime org-download org-contrib org-cliplink open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme noctilux-theme naquadah-theme nameless mwim mustang-theme multi-term multi-line monokai-theme monochrome-theme molokai-theme moe-theme modus-vivendi-theme modus-operandi-theme mmm-mode minimal-theme material-theme markdown-toc majapahit-theme madhat2r-theme macrostep lush-theme lsp-ui lsp-origami lorem-ipsum link-hint light-soap-theme kaolin-themes jbeans-theme jazz-theme ir-black-theme inkpot-theme indent-guide impatient-mode hybrid-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation heroku-theme hemisu-theme helm-xref helm-themes helm-swoop helm-rtags helm-purpose helm-projectile helm-org-rifle helm-org helm-notmuch helm-mode-manager helm-make helm-lsp helm-ls-git helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag hc-zenburn-theme gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate google-c-style golden-ratio gnuplot gh-md gandalf-theme fuzzy flyspell-correct-helm flycheck-ycmd flycheck-rtags flycheck-pos-tip flycheck-package flycheck-elsa flx-ido flatui-theme flatland-theme find-by-pinyin-dired farmhouse-theme fancy-battery eziam-theme eyebrowse expand-region exotica-theme evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-collection evil-cleverparens evil-args evil-anzu eval-sexp-fu espresso-theme eshell-z eshell-prompt-extras esh-help emr emmet-mode elisp-slime-nav editorconfig dumb-jump drag-stuff dracula-theme dotenv-mode doom-themes django-theme disaster dired-quick-sort diminish define-word darktooth-theme darkokai-theme darkmine-theme darkburn-theme dap-mode dakrone-theme cyberpunk-theme cpp-auto-include company-ycmd company-web company-statistics company-rtags company-c-headers column-enforce-mode color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized clues-theme clean-aindent-mode chocolate-theme chinese-conv cherry-blossom-theme centered-cursor-mode ccls busybee-theme bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes ahk-mode aggressive-indent afternoon-theme ace-pinyin ace-link ace-jump-helm-line ac-ispell))
  '(pdf-view-midnight-colors '("#b2b2b2" . "#292b2e"))
  '(pyim-dicts
-   '(:name "pyim-greatdict" :file "d:/home/cyd/.spacemacs.private/local/pyim-greatdict.pyim" :coding utf-8-unix :dict-type pinyin-dict))
+   '(:name "pyim-greatdict" :file "d:/home/cyd/.spacemacs.private/local/pyim-bigdict.pyim" :coding utf-8-unix :dict-type pinyin-dict))
  '(pyim-page-tooltip t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(org-mode-line-clock ((t (:background "black" :foreground "red" :box (:line-width -1 :style released-button)))))
+ '(org-mode-line-clock ((t (:background "grey75" :foreground "red" :box (:line-width -1 :style released-button)))))
  '(show-paren-match ((t (:foreground "black" :background "red")))))
 )

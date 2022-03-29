@@ -9,28 +9,43 @@
 ;;
 ;;; License: GPLv3
 
+;; History
+;; 20220311 Add variables, simulating spacemacs/org-layer/config.el
+;; Variables
 
+(defvar org-enable-latex-support nil
+  "If non-nil, org export to latex customizations are enabled")
+
+(defvar my-org-latex-compiler "xelatex"
+  "The tex file compiler After org files export to tex files.
+Its value will be assigned to the variable ‘org-latex-compiler’ in package ox-latex.
+
+org-latex-compiler is a variable defined in ‘ox-latex.el’.
+It indicates LaTeX compiler to use. The default value is “pdflatex” (double quotes), which must be an element in ‘org-latex-compilers’ or the empty quote. Can also be set in buffers via #+LATEX_COMPILER.
+
+'org-latex-compilers' value is (“pdflatex” “xelatex” “lualatex”)
+"
+  ) ; end defvar my-org-latex-compiler
+
+(defvar my-org-latex-image-default-width nil
+  "If nil, the image exported to latex will have its natural size.
+
+To set the image's default width to the full linewidth, use “1.0\\linewidth”, or any other scales."
+  ) ; end defvar my-org-latex-image-default-width
 ;; Because of autoloading, calling to =org= functions will trigger the loading up
 ;; of the =org= shipped with emacs which will induce conflicts.
 ;; One way to avoid conflict is to wrap your =org= config code in a
 ;; =with-eval-after-load= block like this:
 (with-eval-after-load 'org
 
-;; Tweak the bullets displayed in the org buffer
-;; If this is commented out, bullets in themes will be used.
+  (defvar my-org-enable-fill-column-mode nil
+    "If non-nil, the fill-column-mode in org-mode is enabled and line will wrap at 'fill-column'.")
+;; Tweak the bullets displayed in the org buffer, overwrite theme settings.
 ;;(setq org-bullets-bullet-list '("*" "*" "■" "◆" "▲" "▶"))
 
 
 ;; 4.4 Agenda Setup
-;; 设置变量org-agenda-files，以便让Org-Mode知道在哪些文件里搜寻TODO和计划项目
-;;   (setq org-agenda-files (list (concat orgPath "Campus.org")
-;;                                (concat orgPath "Meeting.org")))
-;;我们不再指定具体的org文件，而是使用目录形式，所有目录下的org文件都在搜索范围内
-;; cuiyidong@20140502
-;; (setq org-agenda-files (list orgPath))  ; orgPath is defined in my-commons/config.el
 
-;; Set to the location of your Org files on your local system
-;;; (setq org-directory orgPath )
 ;; Set to the name of the file where new notes will be stored
 ;;; org-mobile-inbox-for-pull (concat orgPath "notes.org") )
 ;; Set to <your Dropbox root directory>/MobileOrg.
@@ -39,12 +54,6 @@
 ;; Set to my diary file (added by cuiyidong@20130714)
 ;; This setting will replace the general diary-file settings (cyd@20181112)
 ;;; (setq org-my-diary-file (concat orgPath "diary.org"))
-
-
-;; ======= My extra setup ====================================================
-;; fontify code in code blocks
-;; where there is a #+begin_src xxx
-;; (setq org-src-fontify-natively t)
 
 
 ;; ======= 5 Tasks and States ==================================================

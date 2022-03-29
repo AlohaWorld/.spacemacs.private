@@ -4,12 +4,11 @@
 #+CAPTION: logo
 
 # The maximum height of the logo should be 200 pixels.
-[[img/my-org.png]]
 
 * Table of Contents                                        :TOC_4_org:noexport:
- - [[Description][Description]]
- - [[Install][Install]]
- - [[Key bindings][Key bindings]]
+- [[Description][Description]]
+- [[Install][Install]]
+- [[Key bindings][Key bindings]]
 
 * Description
 This layer does wonderful things:

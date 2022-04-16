@@ -25,7 +25,7 @@
       (org-cycle)
       (org-cycle)))
 
-  (defun bh/set-truncate-lines ()
+  (defun set-truncate-lines ()
     "Toggle value of truncate-lines and refresh window display."
     (interactive)
     (setq truncate-lines (not truncate-lines))
@@ -37,6 +37,7 @@
   (defun bh/make-org-scratch ()
     (interactive)
     (find-file (concat orgPath "publish/scratch.org") )
+
     (gnus-make-directory (concat orgPath "publish")))
 
   (defun bh/switch-to-scratch ()

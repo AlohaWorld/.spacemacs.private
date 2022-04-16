@@ -13,7 +13,7 @@
 ;; 20220311 Add variables, simulating spacemacs/org-layer/config.el
 ;; Variables
 
-(defvar org-enable-latex-support nil
+(defvar my-org-enable-latex-support nil
   "If non-nil, org export to latex customizations are enabled")
 
 (defvar my-org-latex-compiler "xelatex"

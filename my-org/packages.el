@@ -30,7 +30,7 @@
 (defconst my-org-packages
   '(
     (ox-latex :location built-in
-              :toggle org-enable-latex-support) ; see config.el
+              :toggle my-org-enable-latex-support) ; see config.el
     )
   "The list of Lisp packages required by the my-org layer.")
 
@@ -41,7 +41,9 @@
     ;; enabled.
     ;; 在org模式中自动检测table
     (add-hook 'org-mode-hook 'table-recognize)
-""    (add-hook 'org-mode-hook 'my-org-toc-show-hook)
+    (add-hook 'org-mode-hook 'my-org-toc-show-hook)
+    (if my-org-enable-fill-column-mode (turn-on-auto-fill) (turn-off-auto-fill))
+    ;; (add-hook 'org-mode-hook 'turn-off-auto-fill) ; We do NOT hard wrap lines in org-mode
     (use-package ox-md)
 	  ) ; end defun my-org/post-init-org
 

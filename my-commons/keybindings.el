@@ -83,3 +83,94 @@ occurence of CHAR."
 
 ;; ÓÃÆ´ÒôÊ××ÖÄ¸ËÑË÷ºº×Ö
 (global-set-key "\C-cs" 'ace-pinyin-jump-char-2)
+
+
+;; An initial C-w/M-w will grab only the word at point, while calling it a
+;; second time will grab the entire line.
+;; https://emacs.stackexchange.com/questions/2347/kill-or-copy-current-line-with-minimal-keystrokes
+
+;; *** Copy word/line without selecting
+(defadvice kill-ring-save (before slick-copy-line activate compile)
+  "When called interactively with no region, copy the word or line
+
+Calling it once without a region will copy the current word.
+Calling it a second time will copy the current line."
+    (interactive
+     (if mark-active (list (region-beginning) (region-end))
+       (if (eq last-command 'kill-ring-save)
+           (progn
+             ;; Uncomment to only keep the line in the kill ring
+             ;; (kill-new "" t)
+             (message "Copied line")
+             (list (line-beginning-position)
+                   (line-beginning-position 2)))
+         (save-excursion
+           (forward-char)
+           (backward-word)
+           (mark-word)
+           (message "Copied word")
+           (list (mark) (point)))))))
+
+;; *** Kill word/line without selecting
+(defadvice kill-region (before slick-cut-line first activate compile)
+  "When called interactively kill the current word or line.
+
+Calling it once without a region will kill the current word.
+Calling it a second time will kill the current line."
+  (interactive
+   (if mark-active (list (region-beginning) (region-end))
+    (if (eq last-command 'kill-region)
+        (progn
+          ;; Return the previous kill to rebuild the line
+          (yank)
+          ;; Add a blank kill, otherwise the word gets appended.
+          ;; Change to (kill-new "" t) to remove the word and only
+          ;; keep the whole line.
+          (kill-new "")
+          (message "Killed Line")
+          (list (line-beginning-position)
+                (line-beginning-position 2)))
+      (save-excursion
+        (forward-char)
+        (backward-word)
+        (mark-word)
+        (message "Killed Word")
+        (list (mark) (point)))))))
+
+
+
+;; https://emacs.stackexchange.com/questions/14231/modification-of-kill-ring-save-to-copy-current-word-line-whole-buffer-if-no-reg
+;; on the first execution behaves like the regular kill-ring-save if some region is selected
+;; on the first execution copies the current word if no region is selected,
+;; on the second execution copies the current line
+;; on the third execution copies the current paragraph
+;; on the fourth execution and so on copies the whole current buffer
+
+;; expand-region or easy-kill or hydra might provide better idea on how to do one thing continuously
+(defvar my-kill-ring-save--counter)
+
+(defun my-kill-ring-save ()
+  (interactive)
+  (if (eq last-command this-command)
+      (cl-incf my-kill-ring-save--counter)
+    (setq my-kill-ring-save--counter 1))
+  (cond ((eq my-kill-ring-save--counter 1)
+         (if (use-region-p)
+             (kill-ring-save (region-beginning) (region-end))
+           (kill-new (current-word))))
+        ((eq my-kill-ring-save--counter 2)
+         (kill-ring-save (line-beginning-position) (line-end-position)))
+        ((eq my-kill-ring-save--counter 3)
+         (let (page-beginning-pos page-end-pos)
+           (save-excursion              ; I am not really sure about them nowadays
+            ; (save-restriction
+               (forward-page)
+               (setq page-end-pos (point))
+               (forward-page -1)
+               (setq page-beginning-pos (point))) ;)
+           (kill-ring-save page-beginning-pos page-end-pos)))
+        ((eq my-kill-ring-save--counter 4)
+         (kill-new (buffer-string)))))
+
+;; For testing
+(global-set-key (kbd "<f6>") #'my-kill-ring-save)

@@ -180,7 +180,8 @@
 (setq default-major-mode 'text-mode)
 ;; auto-fill-mode: When the length of a line exceeds a limit, the text will
 ;; auto wrap
-(add-hook 'text-mode-hook 'turn-on-auto-fill)
+;; We don't use auto-fill 'cause it will introduce extra return carriage 
+;; (add-hook 'text-mode-hook 'turn-on-auto-fill)
 ;; The word wrap column
 (setq-default fill-column 80)
 

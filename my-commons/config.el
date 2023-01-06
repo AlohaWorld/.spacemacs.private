@@ -10,7 +10,7 @@
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
 ;; Setup personal information
-(setq user-full-name "Cui Yidong")
+(setq user-full-name "Nathan Cui")
 (setq user-mail-address "cyd@bupt.edu.cn")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -44,7 +44,7 @@
 (set-face-attribute 'calendar-iso-week-header-face nil
                     :height 1.0)
 (setq calendar-intermonth-header
-      (propertize "Wk"                  ; or e.g. "KW" in Germany
+      (propertize "Wk"
                   'font-lock-face 'calendar-iso-week-header-face))
 
 ;; using a different color for the week number:
@@ -192,3 +192,11 @@
 ;;    some people prefer using an alias like M-x qrr. Put the
 ;;    following in your InitFile to create such alias.
 (defalias 'qrr 'query-replace-regexp)
+
+;;
+;; Tools to reinstall packages
+(defun reinstall-package (pkg)
+  (interactive (list (intern (completing-read "Reinstall package: " (mapcar #'car package-alist)))))
+  (unload-feature pkg)
+  (package-reinstall pkg)
+  (require pkg))

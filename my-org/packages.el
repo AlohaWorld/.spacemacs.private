@@ -31,6 +31,8 @@
   '(
     (ox-latex :location built-in
               :toggle my-org-enable-latex-support) ; see config.el
+    (org-yaap :location (recipe :fetcher gitlab :repo "tygrdev/org-yaap")
+              :toggle my-org-enable-org-yaap) ; see config.el
     )
   "The list of Lisp packages required by the my-org layer.")
 
@@ -67,6 +69,8 @@
         (add-to-list 'org-latex-packages-alist '("" "mhchem" t))
         (add-to-list 'org-latex-packages-alist '("" "fontenc" t))
         (add-to-list 'org-latex-packages-alist '("" "multirow" t))
+        (add-to-list 'org-latex-packages-alist '("" "xeCJK" t))
+        (add-to-list 'org-latex-packages-alist '("" "listings" t))
         ) ; end progn
       )
     ) ; end defun my-org/init-ox-latex
@@ -81,9 +85,21 @@
       ) ; end progn
     ) ; end defun my-org/post-init-ox-latex
 
+  (defun my-org/pre-init-org-yaap()
+      nil)
+  (defun my-org/init-org-yaap()
+      (use-package org-yaap
+        :init
+        :config
+        (org-yaap-mode 1))
+      )
+  (defun my-org/post-init-org-yaap()
+      nil)
+
   ;;(defun org/init-ox-latex ()
   ;;  (use-package ox-latex :after ox))
 ) ; end when
+
 
 ;;; Initialize each packagee
 ;; For each included package, you may define one or more of the following functions,

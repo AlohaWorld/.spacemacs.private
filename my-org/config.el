@@ -32,6 +32,11 @@ It indicates LaTeX compiler to use. The default value is “pdflatex” (double 
 
 To set the image's default width to the full linewidth, use “1.0\\linewidth”, or any other scales."
   ) ; end defvar my-org-latex-image-default-width
+
+(defvar my-org-enable-org-yaap nil
+  "If non-nil, org will use org-yaap to make org reminder/notification.
+When enabling org-yaap, org-notification should be disabled.")
+
 ;; Because of autoloading, calling to =org= functions will trigger the loading up
 ;; of the =org= shipped with emacs which will induce conflicts.
 ;; One way to avoid conflict is to wrap your =org= config code in a
@@ -1377,7 +1382,7 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
     (widen)))
 
 (add-hook 'org-agenda-mode-hook
-          '(lambda () (org-defkey org-agenda-mode-map "W" 'bh/widen))
+          #'(lambda () (org-defkey org-agenda-mode-map "W" 'bh/widen))
           'append)
 
 (defun bh/restrict-to-file-or-follow (arg)
@@ -1393,7 +1398,7 @@ so change the default 'F' binding in the agenda to allow both"
     (beginning-of-buffer)))
 
 (add-hook 'org-agenda-mode-hook
-          '(lambda () (org-defkey org-agenda-mode-map "F" 'bh/restrict-to-file-or-follow))
+          #'(lambda () (org-defkey org-agenda-mode-map "F" 'bh/restrict-to-file-or-follow))
           'append)
 
 (defun bh/narrow-to-org-subtree ()
@@ -1415,7 +1420,7 @@ so change the default 'F' binding in the agenda to allow both"
       (org-agenda-set-restriction-lock))))
 
 (add-hook 'org-agenda-mode-hook
-          '(lambda () (org-defkey org-agenda-mode-map "N" 'bh/narrow-to-subtree))
+          #'(lambda () (org-defkey org-agenda-mode-map "N" 'bh/narrow-to-subtree))
           'append)
 
 (defun bh/narrow-up-one-org-level ()
@@ -1438,7 +1443,7 @@ so change the default 'F' binding in the agenda to allow both"
     (bh/narrow-up-one-org-level)))
 
 (add-hook 'org-agenda-mode-hook
-          '(lambda () (org-defkey org-agenda-mode-map "U" 'bh/narrow-up-one-level))
+          #'(lambda () (org-defkey org-agenda-mode-map "U" 'bh/narrow-up-one-level))
           'append)
 
 (defun bh/narrow-to-org-project ()
@@ -1463,7 +1468,7 @@ so change the default 'F' binding in the agenda to allow both"
       (org-agenda-set-restriction-lock))))
 
 (add-hook 'org-agenda-mode-hook
-          '(lambda () (org-defkey org-agenda-mode-map "P" 'bh/narrow-to-project))
+          #'(lambda () (org-defkey org-agenda-mode-map "P" 'bh/narrow-to-project))
           'append)
 
 (defvar bh/current-view-project nil)
@@ -1497,7 +1502,7 @@ so change the default 'F' binding in the agenda to allow both"
     (error "All projects viewed.")))
 
 (add-hook 'org-agenda-mode-hook
-          '(lambda () (org-defkey org-agenda-mode-map "V" 'bh/view-next-project))
+          #'(lambda () (org-defkey org-agenda-mode-map "V" 'bh/view-next-project))
           'append)
 
 ;;
@@ -1514,7 +1519,7 @@ so change the default 'F' binding in the agenda to allow both"
 ;;   still active outside the agenda restriction. C-c C-x > turns off the agenda 
 ;;   restriction lock returning your agenda view back to normal.
 (add-hook 'org-agenda-mode-hook
-          '(lambda () (org-defkey org-agenda-mode-map "\C-c\C-x<" 'bh/set-agenda-restriction-lock))
+          #'(lambda () (org-defkey org-agenda-mode-map "\C-c\C-x<" 'bh/set-agenda-restriction-lock))
           'append)
 
 (defun bh/set-agenda-restriction-lock (arg)
@@ -1549,7 +1554,7 @@ so change the default 'F' binding in the agenda to allow both"
 ;;
 ;; Always hilight the current agenda line
 (add-hook 'org-agenda-mode-hook
-          '(lambda () (hl-line-mode 1))
+          #'(lambda () (hl-line-mode 1))
           'append)
 
 ;; The following custom-set-faces create the highlights
@@ -2056,7 +2061,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 ;; time my habit display doesn't come back. To make sure I look at the habits
 ;; daily I have the following settings to redisplay the habits in the agenda
 ;; each day. This turns the habit display on again at 6AM each morning.
-(run-at-time "06:00" 86400 '(lambda () (setq org-habit-show-habits t)))
+(run-at-time "06:00" 86400 #'(lambda () (setq org-habit-show-habits t)))
 
 ;;
 ;; 18.21 Insert Inactive Timestamps And Exclude From Export

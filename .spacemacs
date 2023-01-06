@@ -91,9 +91,9 @@ This function should only modify configuration layer settings."
      autohotkey
      (plantuml :variables
                plantuml-jar-path (concat (car dotspacemacs-configuration-layer-path)
-                                         "java/plantuml-1.2021.16.jar")
+                                         "java/plantuml.jar")
                org-plantuml-jar-path (concat (car dotspacemacs-configuration-layer-path)
-                                             "java/plantuml-1.2021.16.jar")
+                                             "java/plantuml.jar")
                )
      ;git
      ;; spell & syntax checking
@@ -106,7 +106,7 @@ This function should only modify configuration layer settings."
 
      ;; org-mode setup
      (org :variables
-          ;; 设置变量org-agenda-files让Org-Mode知道在哪些文件搜寻TODO
+          ;; 设置变量 org-agenda-files 让 Org-Mode 知道在哪些文件搜寻 TODO
           ;; Push all .org files in the path to the file list
           ;; org-agenda-files (directory-files-recursively orgPath "\\.org$")
           ;; org-agenda-files (directory-files orgPath t "\\.org$")
@@ -120,8 +120,9 @@ This function should only modify configuration layer settings."
           ;; org-todo-dependencies-strategy 'naive-auto
 
           ;; Enable notifications for agenda events
-          org-enable-notifications t
-          org-start-notification-daemon-on-startup t
+          ;; org-notification is altered by org-yaap. ==>see my-org layer
+          org-enable-notifications nil
+          org-start-notification-daemon-on-startup nil
 
           ;; ---------------------------------------------------------------------------
           ;; Org-journal support
@@ -159,8 +160,8 @@ This function should only modify configuration layer settings."
           ;; superscripts in org mod
           org-enable-appear-support t
 
-          org-enable-reveal-js-support t
-          org-re-reveal-root "file:///D://MyDocument/99.Org/reveal.js"
+          ;; org-enable-reveal-js-support t
+          ;; org-re-reveal-root "file:///D://MyDocument/99.Org/reveal.js"
 
           ;; This will replace the general diary-file settings
           org-my-diary-file (concat orgPath "diary.org")
@@ -168,12 +169,29 @@ This function should only modify configuration layer settings."
           ;; Fontify code in code blocks
           org-src-fontify-natively t
 
+          ;; Enforce dependencies in the TODO hierarchy
+
+          ;; Setting it to 'naive-auto, will cause an entry to switch to DONE
+          ;; when all its subentries are done, and to TODO otherwise.
+
+          ;; Setting it to 'semiauto, will cause the user to be prompted to change
+          ;; an entry's state when the state of the subentries imply it: that is,
+          ;; when they are either all done while it is still a todo, or the when
+          ;; they are all still todo's while it is done.
+          org-todo-dependencies-strategy 'semiauto
+
           :bind (:map spacemacs-org-mode-map-root-map ("M-RET" . nil)))
 
      ;; html is required by org-export
      html
      ;; pdf, which needs pdf-tools
      pdf
+     ;; pandoc, a universal doc format converter
+     ;; pandoc
+     ;; For evernote
+
+
+
      ;; latex needs texlive software. Install independent texlive software or msys2
      ;; texlive package. e.g. pacman -Ss texlive and then install related packages
      ;; mingw-w64-x86_64-texlive
@@ -186,15 +204,20 @@ This function should only modify configuration layer settings."
             ;; Currently, the LaTeX LSP backend depends on TexLab
             latex-backend 'lsp
             ;; To get latexmk, under msys2: pacman -S mingw-w64-x86_64-texlive-extra-utils
+            ;; Default latex-build-command is "LaTeX", which, in msys2, is assigned to pdflatex
+            ;; Moreover, luatex is another option (no more info till now)
             latex-build-command 'latexmk
-            ;; latex-build-command "LaTeX" ; msys2 LaTeX == pdflatex
+            ;; An appropriate TeX-engine is required for high-quality typesetting in certain languages.
+            ;; For convenience, xetex is chosen when it's found on PATH and when either chinese or japanese layer is enabled.
             latex-build-engine 'xetex
             ;; To update the preview buffer whenever the compiled PDF file changes
             latex-refresh-preview t
             ;; make =pdf-tools= open in a split window
-            latex-view-pdf-in-split-window nil
+            latex-view-pdf-in-split-window t
             ;; prefer another pdf viewer to preview
             latex-view-with-pdf-tools nil
+            ;; disable auto-fill-mode in latex-mode
+            latex-enable-auto-fill nil
             latex-enable-folding t)
      ;; shell
      (shell :variables
@@ -205,7 +228,7 @@ This function should only modify configuration layer settings."
      (unicode-fonts :variables unicode-fonts-enable-ligatures t)
 
      ;; theme
-     themes-megapack
+     ;; themes-megapack
      theming
 
      ;; chinese input method
@@ -215,20 +238,23 @@ This function should only modify configuration layer settings."
 
      ;; email processing
      gnus
-     notmuch
+     ;; Temporal disable for debug make-process 
+     ;notmuch
 
      ;; Paper writing/reference manager, with ebib support
-     ;(bibtex :variables
-     ;        bibtex-enable-ebib-support t
-     ;        ebib-preload-bib-files '("file:///D://MyDocument/99.Org/ebib/myref.bib")
-             ; ebib-file-search-dirs '("/path-to-documents-directory")
+     (bibtex :variables
+             bibtex-enable-ebib-support t
+             ; ebib-preload-bib-files '("file:///D://MyDocument/99.Org/ebib/myref.bib")
+             ebib-file-search-dirs '("./")
              ; ebib-import-directory "path-to-e.g.-download-directory"
-     ;        )
+     ) ;; end (bibtex
      ;; My personal layers
      my-commons
      my-buffer
      (my-org :variables
-             org-enable-latex-support t
+             my-org-enable-latex-support t
+             my-org-enable-fill-column-mode nil ; disable auto-fill-mode in org-mode
+             my-org-enable-org-yaap nil ;;org-yaap package does NOT work
              )
      )
 
@@ -267,12 +293,17 @@ This function should only modify configuration layer settings."
 This function is called at the very beginning of Spacemacs startup,
 before layer configuration.
 It should only modify the values of Spacemacs settings."
+  ;; (setq debug-on-error t)
   ;; This setq-default sexp is an exhaustive list of all the supported
   ;; spacemacs settings.
   (setq-default
-   ;; If non-nil then enable support for the portable dumper. You'll need
-   ;; to compile Emacs 27 from source following the instructions in file
+   ;; If non-nil then enable support for the portable dumper. You'll need to
+   ;; compile Emacs 27 from source following the instructions in file
    ;; EXPERIMENTAL.org at to root of the git repository.
+   ;;
+   ;; WARNING: pdumper does not work with Native Compilation, so it's disabled
+   ;; regardless of the following setting when native compilation is in effect.
+   ;;
    ;; (default nil)
    dotspacemacs-enable-emacs-pdumper nil
 
@@ -358,7 +389,14 @@ It should only modify the values of Spacemacs settings."
    ;; directory. A string value must be a path to an image format supported
    ;; by your Emacs build.
    ;; If the value is nil then no banner is displayed. (default 'official)
-   dotspacemacs-startup-banner nil
+   dotspacemacs-startup-banner 'official
+
+   ;; Scale factor controls the scaling (size) of the startup banner. Default
+   ;; value is `auto' for scaling the logo automatically to fit all buffer
+   ;; contents, to a maximum of the full image height and a minimum of 3 line
+   ;; heights. If set to a number (int or float) it is used as a constant
+   ;; scaling factor for the default logo size.
+   dotspacemacs-startup-banner-scale 'auto
 
    ;; List of items to show in startup buffer or an association list of
    ;; the form `(list-type . list-size)`. If nil then it is disabled.
@@ -385,6 +423,11 @@ It should only modify the values of Spacemacs settings."
    ;; The minimum delay in seconds between number key presses. (default 0.4)
    dotspacemacs-startup-buffer-multi-digit-delay 0.4
 
+   ;; If non-nil, show file icons for entries and headings on Spacemacs home buffer.
+   ;; This has no effect in terminal or if "all-the-icons" package or the font
+   ;; is not installed. (default nil)
+   dotspacemacs-startup-buffer-show-icons nil
+
    ;; Default major mode for a new empty buffer. Possible values are mode
    ;; names such as `text-mode'; and `nil' to use Fundamental mode.
    ;; (default `text-mode')
@@ -395,7 +438,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; If non-nil, *scratch* buffer will be persistent. Things you write down in
    ;; *scratch* buffer will be saved and restored automatically.
-   dotspacemacs-scratch-buffer-persistent nil
+   dotspacemacs-scratch-buffer-persistent t
 
    ;; If non-nil, `kill-buffer' on *scratch* buffer
    ;; will bury it instead of killing.
@@ -410,12 +453,10 @@ It should only modify the values of Spacemacs settings."
    ;; with 2 themes variants, one dark and one light)
    dotspacemacs-themes '(solarized-dark-high-contrast
                          monokai
-                         doom-solarized-dark
                          darkburn
                          cyberpunk
                          spacemacs-dark
                          spacemacs-light
-                         spolsky
                          )
 
    ;; Set the theme for the Spaceline. Supported themes are `spacemacs',
@@ -425,7 +466,7 @@ It should only modify the values of Spacemacs settings."
    ;; refer to the DOCUMENTATION.org for more info on how to create your own
    ;; spaceline theme. Value can be a symbol or list with additional properties.
    ;; (default '(spacemacs :separator wave :separator-scale 1.5))
-   dotspacemacs-mode-line-theme '(spacemacs :separator wave :separator-scale 0.6)
+   dotspacemacs-mode-line-theme '(spacemacs :separator box :separator-scale 0.6)
 
    ;; If non-nil the cursor color matches the state color in GUI Emacs.
    ;; (default t)
@@ -693,7 +734,9 @@ It should only modify the values of Spacemacs settings."
    ;; (default nil - same as frame-title-format)
    dotspacemacs-icon-title-format nil
 
-   ;; Show trailing whitespace (default t)
+   ;; Color highlight trailing whitespace in all prog-mode and text-mode derived
+   ;; modes such as c++-mode, python-mode, emacs-lisp, html-mode, rst-mode etc.
+   ;; (default t)
    dotspacemacs-show-trailing-whitespace t
 
    ;; Delete whitespace while saving buffer. Possible values are `all'
@@ -738,7 +781,7 @@ It should only modify the values of Spacemacs settings."
 
   (setq configuration-layer-elpa-archives
         '(("melpa-cn" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
-          ("org-cn"   . "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/")
+          ;; ("org-cn"   . "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/")
           ("gnu-cn"   . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
           ("nongnu"   . "https://elpa.nongnu.org/nongnu/")
           ))
@@ -765,17 +808,22 @@ It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
 
   ;; Setup proxy
-   ;; (setq url-proxy-services
-   ;;    '(("no_proxy" . "^\\(localhost\\|10\\..*\\|192\\.168\\..*\\)")
-   ;;      ("http" . "127.0.0.1:20080")
-   ;;      ("https" . "127.0.0.1:20080")))
+   (setq url-proxy-services
+      '(("no_proxy" . "^\\(localhost\\|10\\..*\\|192\\.168\\..*\\)")
+        ("http" . "127.0.0.1:20080")
+        ("https" . "127.0.0.1:20080")))
 
   ;; Setup modifications for themes
   (setq theming-modifications
         '((solarized-dark-high-contrast
            (default :background "black")
            ;; (highlight :background "blue")
-           )))
+           )
+          (solarized-dark
+           (default :background "black")
+           (avy-background-face :foreground "#586e75")
+           (font-lock-doc-face :foreground "#2aa198"))
+          ))
 
   ;; Setup emacs running environment
   ;; If uname is from msys2, then sub-system-type is msys
@@ -786,7 +834,7 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Setup all the necessary directories
   ;; The following directories are all global variables
-  ;; 为Windows下的emacs增加加载路径
+  ;; 为 Windows 下的 emacs 增加加载路径
   ;; setq 序列 (concat 序列 " " (int-to-string 变量))
 
   (if (eq system-type 'windows-nt)
@@ -815,10 +863,11 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
   (if (eq system-type 'gnu/linux)
       (defconst orgPath (concat myDocument "99.org/")
         "Path for all .org files under linux" ))
-
-  (setq bibtex-completion-bibliography (concat orgPath "Papers/references.bib")
-        bibtex-completion-library-path (concat orgPath "Papers/")
-        bibtex-completion-notes-path (concat orgPath "Papers/notes.org"))
+  ;;
+  ;; If the following 3 vars are set, the refs in *.bib file cannot be found by tex2pdf render.
+  ;; (setq bibtex-completion-bibliography (concat orgPath "Papers/references.bib")
+  ;;       bibtex-completion-library-path (concat orgPath "Papers/")
+  ;;       bibtex-completion-notes-path (concat orgPath "Papers/notes.org"))
 
   ) ;; end def dotspacemacs/user-init ()
 
@@ -827,7 +876,8 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
 This function is called only while dumping Spacemacs configuration. You can
 `require' or `load' the libraries of your choice that will be included in the
 dump."
-  )
+)
+
 
 (defun dotspacemacs/user-config ()
   "Configuration for user code:
@@ -837,6 +887,8 @@ Put your configuration code here, except for variables that should be set
 before packages are loaded."
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Set the directories and paths
+
   ;; Check the paths in load-path exist or not if not exists then prompt errors
   (dolist (pathx load-path)
     (if (equal nil (file-directory-p pathx))
@@ -868,34 +920,43 @@ before packages are loaded."
   ;; (message (concat "Variable dired-listing-switches is " dired-listing-switches))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; setup chinese fonts
+  ;; Setup chinese related affairs
+
+  ;; Assign the CJK font
   (dolist (charset '(kana han symbol cjk-misc bopomofo))
     (set-fontset-font (frame-parameter nil 'font)
-                      ;; charset (font-spec :family "华文楷体")
+                       charset (font-spec :family "华文楷体")
                       ;; charset (font-spec :family "微软雅黑")
-                      charset (font-spec :family "华光楷体_CNKI")
+                      ;; charset (font-spec :family "华光楷体_CNKI")
                       ;; charset (font-spec :family "华光小标宋_CNKI")
                       )
-
-    (setq face-font-rescale-alist '(("华文楷体" . 1.3)
+    ;; Usually the widths of western characters and CJK characters are not the same
+    ;; so we need to tune the scale to make the width of two western chars being
+    ;; equal to one Chinese character.
+    ;; The scale should be accordance with ~dotspacemacs-default-font~ in dotspacemacs/init()
+    (setq face-font-rescale-alist '(("华文楷体" . 1.2)
                                     ("微软雅黑" . 1.3)
                                     ("华光楷体_CNKI" . 1.2)
                                     ("华光小标宋_CNKI" . 1.3))) ; Fira 12:1.2; Fira 13:1.3
     ) ;; end dolist
 
-  ;; Set current window size to golden ratio(0.618)
-  ;; (golden-ratio-mode t)
-
-  ;; 设置stardict查词
-  ;; ***相关文件安装***请参见 basicPath/lisp/init/init-stardict.el
+  ;; 设置 stardict 查词。*相关文件安装* 请参见 basicPath/lisp/init/init-stardict.el
   ;; (if (eq system-type 'windows-nt)
   ;;     (load "init-stardict"))
 
-  ;; org-wild-notifier uses the [[https://melpa.org/#/alert][alert]] package for
-  ;; showing notifications
-  (setq alert-default-style 'notifications)
+  ;; Input Method
+  (setq default-input-method "pyim")
+  (global-set-key (kbd "C-\\") 'toggle-input-method)
+
+
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; org-mode related setup
+
+  ;; org-wild-notifier uses the [[https://melpa.org/#/alert][alert]] package for
+  ;; showing notifications
+  ;; (setq alert-default-style 'notifications)
+
   ;; Since version 0.300, spacemacs uses the =org= version from the ELPA repository
   ;; instead of the one shipped with emacs. Then, any =org= related code should not
   ;; be loaded before =dotspacemacs/user-config=, otherwise both versions will be
@@ -905,23 +966,13 @@ before packages are loaded."
     ;; Set to the location of your Org files on your local system
     (setq org-directory orgPath)
 
-    ;; Emacs启动之后，首先显示日程列表
+    ;; Emacs 启动之后，首先显示日程列表
     ;; (eyebrowse-switch-to-window-config-1)
     ;; (setq org-agenda-window-setup 'current-window)
     (org-agenda-list)
-    ;; (sleep-for 1)
-    ;; (toggle-frame-maximized)
     )
 
-  ;; 将org layer中设置好的org-projectile-todo-files 加入到org-agenda中
-  ;; (with-eval-after-load 'org-agenda
-  ;;   (require 'org-projectile)
-  ;;   (mapcar (lambda (file)
-  ;;              (when (file-exists-p file)
-  ;;                (when (not (member file org-agenda-files))
-  ;;                  (push file org-agenda-files) )))
-  ;;           (org-projectile-todo-files)))
-
+  ;; org-latex export setup
   (with-eval-after-load 'ox-latex
     (setf org-latex-default-packages-alist
           (remove '("AUTO" "inputenc" t) org-latex-default-packages-alist))
@@ -931,16 +982,54 @@ before packages are loaded."
   (setq spaceline-org-clock-p t)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; C++编译时若Makefile与源码不在同一目录，（一般在build目录）中，使用Project
-  ;; 根目录下面的.dir-locals.el文件指定。该文件中一般会这样写：
-  ;;   ((c++-mode (helm-make-build-dir . "build/")))
-  ;; 指明Makefile所在目录。但是emacs会抱怨该目录不安全，因此让emacs闭嘴的方法：
+  ;; Latex configuration
+
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
+
+  ;;
+  ;; Under windows 10, we use SumatraPDF as the viewer
+  (add-to-list 'TeX-view-program-list '("Evince" "evince --page-index=%(outpage) %o"))
+  (add-to-list 'TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
+  (add-to-list 'TeX-view-program-list '(("SumatraPDF"
+               ("C:/home/bin/SumatraPDF/SumatraPDF.exe -reuse-instance"
+                   (mode-io-correlate " -forward-search \"%b\" %n") " %o") "SumatraPDF")))
+
+  ;; (setq TeX-view-program-list
+  ;;       '(("SumatraPDF"
+  ;;          ("C:/home/bin/SumatraPDF/SumatraPDF.exe -reuse-instance"
+  ;;           (mode-io-correlate " -forward-search \"%b\" %n")
+  ;;           " %o")
+  ;;          "SumatraPDF")))
+
+  ;;
+  ;; Use pdf-tools to open PDF files
+  (setq TeX-view-program-selection '((output-pdf "SumatraPDF"))
+        ;; TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view))
+        TeX-source-correlate-start-server t)
+
+  ;; Update PDF buffers after successful LaTeX runs
+  (add-hook 'TeX-after-compilation-finished-functions
+            #'TeX-revert-document-buffer)
+
+  ;; For latex full-document previews. When you open up a compiled PDF, the
+  ;; preview will update automatically when you recompile.
+  (add-hook 'doc-view-mode-hook 'auto-revert-mode)
+
+  ;; For improving the quality of the rendered pdf in docview mode
+  (customize-set-variable 'doc-view-resolution 300)
+  (customize-set-variable 'doc-view-scale-internally nil)
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Programming or Language setup
+
+  ;; C++编译时若 Makefile 与源码不在同一目录，（一般在 build 目录）中，使用 Project
+  ;; 根目录下面的.dir-locals.el 文件指定。该文件中一般会这样写：
+  ;;   ((c++-mode q(helm-make-build-dir . "build/")))
+  ;; 指明 Makefile 所在目录。但是 emacs 会抱怨该目录不安全，因此让 emacs 闭嘴的方法：
   (put 'helm-make-build-dir 'safe-local-variable 'stringp)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; Input Method
-  (setq default-input-method "pyim")
-  (global-set-key (kbd "C-\\") 'toggle-input-method)
+  ;; Other configurations
 
   ;;光标靠近鼠标的时候，让鼠标自动让开，别挡住视线
   (mouse-avoidance-mode 'animate)
@@ -948,7 +1037,6 @@ before packages are loaded."
   ;; 光标停留在一个括号上时，令配对括号反显
   (setq show-paren-delay 0)
   (show-paren-mode t)
-
 ) ; end user-config
 
 ;; Do not write anything past this comment. This is where Emacs will
@@ -988,10 +1076,10 @@ This function is called at the very end of Spacemacs initialization."
  '(org-modules
    '(ol-bbdb ol-bibtex ol-gnus org-habit org-id ol-info org-inlinetask org-tempo ol-jsinfo org-habit org-inlinetask ol-irc ol-mew ol-mhe org-protocol ol-rmail ol-vm ol-wl ol-w3m))
  '(package-selected-packages
-   '(doom-modeline shrink-path lsp-latex company-reftex company-math math-symbol-lists company-auctex auctex pdf-view-restore pdf-tools tablist simple-httpd haml-mode counsel-css counsel swiper ivy web-completion-data add-node-modules-path org-wild-notifier helm-ctest cmake-mode zonokai-emacs ox-gfm ligature inspector info+ gendoxy cal-china-x buffer-move font-lock+ zenburn-theme zen-and-art-theme yasnippet-snippets xterm-color ws-butler writeroom-mode winum white-sand-theme which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package unicode-fonts unfill undo-tree underwater-theme ujelly-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme treemacs-projectile treemacs-persp treemacs-icons-dired toxi-theme toc-org terminal-here tao-theme tangotango-theme tango-plus-theme tango-2-theme tagedit symon symbol-overlay sunny-day-theme sublime-themes subatomic256-theme subatomic-theme string-inflection string-edit spaceline-all-the-icons spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme slim-mode shell-pop seti-theme scss-mode sass-mode reverse-theme restart-emacs rebecca-theme rainbow-delimiters railscasts-theme quickrun pyim purple-haze-theme pug-mode professional-theme prettier-js popwin plantuml-mode planet-theme phoenix-dark-pink-theme phoenix-dark-mono-theme pcre2el password-generator paradox pangu-spacing overseer organic-green-theme org-superstar org-rich-yank org-re-reveal org-projectile org-present org-pomodoro org-mime org-download org-contrib org-cliplink open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme noctilux-theme naquadah-theme nameless mwim mustang-theme multi-term multi-line monokai-theme monochrome-theme molokai-theme moe-theme modus-vivendi-theme modus-operandi-theme mmm-mode minimal-theme material-theme markdown-toc majapahit-theme madhat2r-theme macrostep lush-theme lsp-ui lsp-origami lorem-ipsum link-hint light-soap-theme kaolin-themes jbeans-theme jazz-theme ir-black-theme inkpot-theme indent-guide impatient-mode hybrid-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation heroku-theme hemisu-theme helm-xref helm-themes helm-swoop helm-rtags helm-purpose helm-projectile helm-org-rifle helm-org helm-notmuch helm-mode-manager helm-make helm-lsp helm-ls-git helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag hc-zenburn-theme gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate google-c-style golden-ratio gnuplot gh-md gandalf-theme fuzzy flyspell-correct-helm flycheck-ycmd flycheck-rtags flycheck-pos-tip flycheck-package flycheck-elsa flx-ido flatui-theme flatland-theme find-by-pinyin-dired farmhouse-theme fancy-battery eziam-theme eyebrowse expand-region exotica-theme evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-collection evil-cleverparens evil-args evil-anzu eval-sexp-fu espresso-theme eshell-z eshell-prompt-extras esh-help emr emmet-mode elisp-slime-nav editorconfig dumb-jump drag-stuff dracula-theme dotenv-mode doom-themes django-theme disaster dired-quick-sort diminish define-word darktooth-theme darkokai-theme darkmine-theme darkburn-theme dap-mode dakrone-theme cyberpunk-theme cpp-auto-include company-ycmd company-web company-statistics company-rtags company-c-headers column-enforce-mode color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized clues-theme clean-aindent-mode chocolate-theme chinese-conv cherry-blossom-theme centered-cursor-mode ccls busybee-theme bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes ahk-mode aggressive-indent afternoon-theme ace-pinyin ace-link ace-jump-helm-line ac-ispell))
+   '(auctex-latexmk persistent-scratch pandoc-mode ox-pandoc org-ref citeproc queue helm-bibtex bibtex-completion ebib parsebib biblio biblio-core doom-modeline shrink-path lsp-latex company-reftex company-math math-symbol-lists company-auctex pdf-view-restore pdf-tools tablist simple-httpd haml-mode counsel-css counsel swiper ivy web-completion-data add-node-modules-path org-wild-notifier helm-ctest cmake-mode zonokai-emacs ox-gfm ligature inspector info+ gendoxy cal-china-x buffer-move font-lock+ zenburn-theme zen-and-art-theme yasnippet-snippets xterm-color ws-butler writeroom-mode winum white-sand-theme which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package unicode-fonts unfill undo-tree underwater-theme ujelly-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme treemacs-projectile treemacs-persp treemacs-icons-dired toxi-theme toc-org terminal-here tao-theme tangotango-theme tango-plus-theme tango-2-theme tagedit symon symbol-overlay sunny-day-theme sublime-themes subatomic256-theme subatomic-theme string-inflection string-edit spaceline-all-the-icons spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme slim-mode shell-pop seti-theme scss-mode sass-mode reverse-theme restart-emacs rebecca-theme rainbow-delimiters railscasts-theme quickrun pyim purple-haze-theme pug-mode professional-theme prettier-js popwin plantuml-mode planet-theme phoenix-dark-pink-theme phoenix-dark-mono-theme pcre2el password-generator paradox pangu-spacing overseer organic-green-theme org-superstar org-rich-yank org-re-reveal org-projectile org-present org-pomodoro org-mime org-download org-contrib org-cliplink open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme noctilux-theme naquadah-theme nameless mwim mustang-theme multi-term multi-line monokai-theme monochrome-theme molokai-theme moe-theme modus-vivendi-theme modus-operandi-theme mmm-mode minimal-theme material-theme markdown-toc majapahit-theme madhat2r-theme macrostep lush-theme lsp-ui lsp-origami lorem-ipsum link-hint light-soap-theme kaolin-themes jbeans-theme jazz-theme ir-black-theme inkpot-theme indent-guide impatient-mode hybrid-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation heroku-theme hemisu-theme helm-xref helm-themes helm-swoop helm-rtags helm-purpose helm-projectile helm-org-rifle helm-org helm-notmuch helm-mode-manager helm-make helm-lsp helm-ls-git helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag hc-zenburn-theme gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate google-c-style golden-ratio gnuplot gh-md gandalf-theme fuzzy flyspell-correct-helm flycheck-ycmd flycheck-rtags flycheck-pos-tip flycheck-package flycheck-elsa flx-ido flatui-theme flatland-theme find-by-pinyin-dired farmhouse-theme fancy-battery eziam-theme eyebrowse expand-region exotica-theme evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-collection evil-cleverparens evil-args evil-anzu eval-sexp-fu espresso-theme eshell-z eshell-prompt-extras esh-help emr emmet-mode elisp-slime-nav editorconfig dumb-jump drag-stuff dracula-theme dotenv-mode doom-themes django-theme disaster dired-quick-sort diminish define-word darktooth-theme darkokai-theme darkmine-theme darkburn-theme dap-mode dakrone-theme cyberpunk-theme cpp-auto-include company-ycmd company-web company-statistics company-rtags company-c-headers column-enforce-mode color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized clues-theme clean-aindent-mode chocolate-theme chinese-conv cherry-blossom-theme centered-cursor-mode ccls busybee-theme bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes ahk-mode aggressive-indent afternoon-theme ace-pinyin ace-link ace-jump-helm-line ac-ispell))
  '(pdf-view-midnight-colors '("#b2b2b2" . "#292b2e"))
  '(pyim-dicts
-   '(:name "pyim-greatdict" :file "d:/home/cyd/.spacemacs.private/local/pyim-bigdict.pyim" :coding utf-8-unix :dict-type pinyin-dict))
+   '(:name "pyim-bigdict" :file "d:/home/cyd/.spacemacs.private/local/pyim-bigdict.pyim" :coding utf-8-unix :dict-type pinyin-dict))
  '(pyim-page-tooltip t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

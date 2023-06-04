@@ -37,6 +37,11 @@ To set the image's default width to the full linewidth, use “1.0\\linewidth”
   "If non-nil, org will use org-yaap to make org reminder/notification.
 When enabling org-yaap, org-notification should be disabled.")
 
+(defvar my-org-enable-org-timed-alerts nil
+  "If non-nil, org will use org-timed-alerts to scan all org-agenda-files and make reminders.
+When enabling org-timed-alerts, all other org notification plugins should be disabled. e.g.
+org-notification, org-yaap")
+
 ;; Because of autoloading, calling to =org= functions will trigger the loading up
 ;; of the =org= shipped with emacs which will induce conflicts.
 ;; One way to avoid conflict is to wrap your =org= config code in a

@@ -33,6 +33,8 @@
               :toggle my-org-enable-latex-support) ; see config.el
     (org-yaap :location (recipe :fetcher gitlab :repo "tygrdev/org-yaap")
               :toggle my-org-enable-org-yaap) ; see config.el
+    (org-timed-alerts :location (recipe :fetcher github :repo "legalnonsense/org-timed-alerts")
+                      :toggle my-org-enable-org-timed-alerts) ; see config.el
     )
   "The list of Lisp packages required by the my-org layer.")
 
@@ -95,6 +97,37 @@
       )
   (defun my-org/post-init-org-yaap()
       nil)
+
+  ;; org-timed-alerts
+  (defun my-org/pre-init-org-timed-alerts()
+      nil)
+  (defun my-org/init-org-timed-alerts()
+    (progn
+    (use-package org-timed-alerts
+      :after (org)
+      :custom
+      (org-timed-alerts-alert-function 'alert)
+      (org-timed-alerts-tag-exclusions nil)
+      (org-timed-alerts-default-alert-props nil)
+      (org-timed-alerts-warning-times '(-10 -5))
+      (org-timed-alerts-agenda-hook-p t)
+      (org-timed-alert-final-alert-string "IT IS %alert-time\n\n%todo %headline")
+      (org-timed-alert-warning-string (concat "%todo %headline\n at %alert-time\n "
+                                              "it is now %current-time\n "
+                                              "*THIS IS YOUR %warning-time MINUTE WARNING*"))
+      :config
+      (add-hook 'org-mode-hook #'org-timed-alerts-mode))
+    (use-package alert
+      :commands (alert)
+      :config (setq alert-default-style 'toast))
+
+    (use-package alert-toast
+      :after alert)
+    )
+  )
+
+  (defun my-org/post-init-org-timed-alerts()
+    nil)
 
   ;;(defun org/init-ox-latex ()
   ;;  (use-package ox-latex :after ox))

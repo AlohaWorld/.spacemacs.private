@@ -111,7 +111,8 @@ This function should only modify configuration layer settings."
           ;; org-agenda-files (directory-files-recursively orgPath "\\.org$")
           ;; org-agenda-files (directory-files orgPath t "\\.org$")
           org-agenda-files (list (concat orgPath "TODOs.org")
-                                 (concat orgPath "refile.org"))
+                                 (concat orgPath "refile.org")
+                                 )
 
 
           org-id-link-to-org-use-id t ;Create ID to make link
@@ -120,7 +121,7 @@ This function should only modify configuration layer settings."
           ;; org-todo-dependencies-strategy 'naive-auto
 
           ;; Enable notifications for agenda events
-          ;; org-notification is altered by org-yaap. ==>see my-org layer
+          ;; org-notification is altered by org-yaap under linux. ==>see my-org layer
           org-enable-notifications nil
           org-start-notification-daemon-on-startup nil
 
@@ -451,10 +452,13 @@ It should only modify the values of Spacemacs settings."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press `SPC T n' to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(solarized-dark-high-contrast
-                         monokai
-                         darkburn
+   dotspacemacs-themes '(
+                         (solarized-light-high-contrast :location (recipe :fetcher github
+                                                                         :repo "bbatsov/solarized-emacs"))
+                         (solarized-dark-high-contrast :location (recipe :fetcher github
+                                                                         :repo "bbatsov/solarized-emacs"))
                          cyberpunk
+                         monokai
                          spacemacs-dark
                          spacemacs-light
                          )
@@ -950,13 +954,12 @@ before packages are loaded."
   (global-set-key (kbd "C-\\") 'toggle-input-method)
 
 
-
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; org-mode related setup
 
   ;; org-wild-notifier uses the [[https://melpa.org/#/alert][alert]] package for
   ;; showing notifications
-  ;; (setq alert-default-style 'notifications)
+  (setq alert-default-style 'notifications)
 
   ;; Since version 0.300, spacemacs uses the =org= version from the ELPA repository
   ;; instead of the one shipped with emacs. Then, any =org= related code should not
@@ -978,6 +981,8 @@ before packages are loaded."
     (setf org-latex-default-packages-alist
           (remove '("AUTO" "inputenc" t) org-latex-default-packages-alist))
     )
+  ;; Equation scale factors for org-latex export
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.0))
 
   ;;; To permanently enable mode line display of org clock
   (setq spaceline-org-clock-p t)
@@ -985,28 +990,24 @@ before packages are loaded."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Latex configuration
 
-  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.2))
-
   ;;
+  ;; Set default pdf viewer for Latex output.
+  (setq TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
+
   ;; Under windows 10, we use SumatraPDF as the viewer
+  (if (eq system-type 'windows-nt)
+      (add-to-list 'TeX-view-program-list (quote ("SumatraPDF" ("\"c:/home/bin/SumatraPDF/SumatraPDF.exe\" -reuse-instance" (mode-io-correlate " -forward-search %b %n") " %o"))))
+      ) ; end if
+
+  ;; Another pdf viewer
   (add-to-list 'TeX-view-program-list '("Evince" "evince --page-index=%(outpage) %o"))
-  (add-to-list 'TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
-  (add-to-list 'TeX-view-program-list '(("SumatraPDF"
-               ("C:/home/bin/SumatraPDF/SumatraPDF.exe -reuse-instance"
-                   (mode-io-correlate " -forward-search \"%b\" %n") " %o") "SumatraPDF")))
 
-  ;; (setq TeX-view-program-list
-  ;;       '(("SumatraPDF"
-  ;;          ("C:/home/bin/SumatraPDF/SumatraPDF.exe -reuse-instance"
-  ;;           (mode-io-correlate " -forward-search \"%b\" %n")
-  ;;           " %o")
-  ;;          "SumatraPDF")))
-
-  ;;
-  ;; Use pdf-tools to open PDF files
-  (setq TeX-view-program-selection '((output-pdf "SumatraPDF"))
-        ;; TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view))
-        TeX-source-correlate-start-server t)
+  ;; Use SumatraPDF or pdf-tools to open PDF files
+  (if (eq system-type 'windows-nt)
+    (setq TeX-view-program-selection '((output-pdf "SumatraPDF")))
+    (setq TeX-view-program-selection '((output-pdf "PDF Tools")))
+    ) ; end if
+  (setq TeX-source-correlate-start-server t)
 
   ;; Update PDF buffers after successful LaTeX runs
   (add-hook 'TeX-after-compilation-finished-functions
@@ -1055,32 +1056,16 @@ This function is called at the very end of Spacemacs initialization."
  ;; If there is more than one, they won't work right.
  '(cookie-file "~/fortunes/tao")
  '(evil-want-Y-yank-to-eol nil)
- '(highlight-parentheses-colors '("#3cafa5" "#c49619" "#3c98e0" "#7a7ed2" "#93a61a"))
- '(hl-todo-keyword-faces
-   '(("TODO" . "#dc752f")
-     ("NEXT" . "#dc752f")
-     ("THEM" . "#2d9574")
-     ("PROG" . "#4f97d7")
-     ("OKAY" . "#4f97d7")
-     ("DONT" . "#f2241f")
-     ("FAIL" . "#f2241f")
-     ("DONE" . "#86dc2f")
-     ("NOTE" . "#b1951d")
-     ("KLUDGE" . "#b1951d")
-     ("HACK" . "#b1951d")
-     ("TEMP" . "#b1951d")
-     ("FIXME" . "#dc752f")
-     ("XXX+" . "#dc752f")
-     ("\\?\\?\\?+" . "#dc752f")))
+ '(highlight-parentheses-colors '("#3cafa5" "#c49619" "#3c98e0" "#7a7ed2" "#93a61a")) 
  '(org-fontify-done-headline nil)
  '(org-fontify-todo-headline nil)
  '(org-modules
-   '(ol-bbdb ol-bibtex ol-gnus org-habit org-id ol-info org-inlinetask org-tempo ol-jsinfo org-habit org-inlinetask ol-irc ol-mew ol-mhe org-protocol ol-rmail ol-vm ol-wl ol-w3m))
+   '(ol-bbdb ol-bibtex ol-gnus org-habit org-id ol-info org-inlinetask org-tempo org-habit org-inlinetask ol-irc ol-mew ol-mhe org-protocol ol-rmail ol-vm ol-wl ol-w3m))
  '(package-selected-packages
    '(auctex-latexmk persistent-scratch pandoc-mode ox-pandoc org-ref citeproc queue helm-bibtex bibtex-completion ebib parsebib biblio biblio-core doom-modeline shrink-path lsp-latex company-reftex company-math math-symbol-lists company-auctex pdf-view-restore pdf-tools tablist simple-httpd haml-mode counsel-css counsel swiper ivy web-completion-data add-node-modules-path org-wild-notifier helm-ctest cmake-mode zonokai-emacs ox-gfm ligature inspector info+ gendoxy cal-china-x buffer-move font-lock+  yasnippet-snippets xterm-color ws-butler writeroom-mode winum which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package unicode-fonts unfill undo-tree treemacs-projectile treemacs-persp treemacs-icons-dired toc-org terminal-here tagedit symon symbol-overlay string-inflection string-edit spaceline-all-the-icons slim-mode shell-pop scss-mode sass-mode restart-emacs rainbow-delimiters quickrun pyim pug-mode prettier-js popwin plantuml-mode pcre2el password-generator paradox pangu-spacing overseer org-superstar org-rich-yank org-re-reveal org-projectile org-present org-pomodoro org-mime org-download org-contrib org-cliplink open-junk-file nameless mwim multi-term multi-line mmm-mode markdown-toc macrostep lsp-ui lsp-origami lorem-ipsum link-hint indent-guide impatient-mode hybrid-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation  helm-xref  helm-swoop helm-rtags helm-purpose helm-projectile helm-org-rifle helm-org helm-notmuch helm-mode-manager helm-make helm-lsp helm-ls-git helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag google-translate google-c-style golden-ratio gnuplot gh-md fuzzy flyspell-correct-helm flycheck-ycmd flycheck-rtags flycheck-pos-tip flycheck-package flycheck-elsa flx-ido find-by-pinyin-dired fancy-battery  eyebrowse expand-region evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-collection evil-cleverparens evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help emr emmet-mode elisp-slime-nav editorconfig dumb-jump drag-stuff dotenv-mode disaster dired-quick-sort diminish define-word dap-mode cpp-auto-include company-ycmd company-web company-statistics company-rtags company-c-headers column-enforce-mode color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized  clean-aindent-mode chinese-conv centered-cursor-mode ccls auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile apropospriate-theme ahk-mode aggressive-indent ace-pinyin ace-link ace-jump-helm-line ac-ispell))
  '(pdf-view-midnight-colors '("#b2b2b2" . "#292b2e"))
  '(pyim-dicts
-   '(:name "pyim-bigdict" :file "d:/home/cyd/.spacemacs.private/local/pyim-bigdict.pyim" :coding utf-8-unix :dict-type pinyin-dict))
+   '(:name "pyim-bigdict" :file "d:/home/cyd/.spacemacs.d/local/pyim-bigdict.pyim" :coding utf-8-unix :dict-type pinyin-dict))
  '(pyim-page-tooltip t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
